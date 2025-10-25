@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -8,21 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { products } from '@/data/products';
+import { artisans } from '@/data/artisans';
 
-const products = [
-  { id: 1, title: 'Madhubani Painting', artisan: 'Sita Devi', region: 'Bihar', price: '₹2,499', category: 'Painting', image: 'https://images.unsplash.com/photo-1582747652673-603191e6d597?w=500&q=80' },
-  { id: 2, title: 'Warli Art', artisan: 'Jivya Soma', region: 'Maharashtra', price: '₹1,899', category: 'Painting', image: 'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?w=500&q=80' },
-  { id: 3, title: 'Pashmina Shawl', artisan: 'Rashid Khan', region: 'Kashmir', price: '₹8,999', category: 'Textile', image: 'https://images.unsplash.com/photo-1601924638867-f4974de87957?w=500&q=80' },
-  { id: 4, title: 'Brass Lamp', artisan: 'Kumar Das', region: 'West Bengal', price: '₹3,499', category: 'Metal', image: 'https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=500&q=80' },
-  { id: 5, title: 'Kalamkari Saree', artisan: 'Lakshmi Rao', region: 'Andhra Pradesh', price: '₹5,999', category: 'Textile', image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=500&q=80' },
-  { id: 6, title: 'Terracotta Horse', artisan: 'Gopal Prajapati', region: 'Tamil Nadu', price: '₹1,299', category: 'Pottery', image: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=500&q=80' },
-  { id: 7, title: 'Pattachitra', artisan: 'Raghunath Mahapatra', region: 'Odisha', price: '₹4,299', category: 'Painting', image: 'https://images.unsplash.com/photo-1579541814924-49fef17c5be5?w=500&q=80' },
-  { id: 8, title: 'Bamboo Basket', artisan: 'Menaka Gogoi', region: 'Assam', price: '₹899', category: 'Bamboo', image: 'https://images.unsplash.com/photo-1611439374584-cd9a02c7c95e?w=500&q=80' },
-  { id: 9, title: 'Block Print Fabric', artisan: 'Vinay Joshi', region: 'Rajasthan', price: '₹2,199', category: 'Textile', image: 'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?w=500&q=80' },
-];
-
-const categories = ['All', 'Painting', 'Textile', 'Metal', 'Pottery', 'Bamboo'];
-const regions = ['All', 'Bihar', 'Maharashtra', 'Kashmir', 'West Bengal', 'Andhra Pradesh', 'Tamil Nadu', 'Odisha', 'Assam', 'Rajasthan'];
+const categories = ['All', 'Painting', 'Textiles', 'Pottery', 'Metalwork', 'Woodcraft'];
+const regions = ['All', 'Bihar', 'Kashmir', 'Rajasthan', 'Gujarat', 'Odisha', 'Tamil Nadu', 'Karnataka', 'Maharashtra', 'West Bengal', 'Andhra Pradesh', 'Uttar Pradesh', 'Chhattisgarh'];
 
 export default function Explore() {
   const navigate = useNavigate();
@@ -30,19 +20,31 @@ export default function Explore() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedRegion, setSelectedRegion] = useState('All');
 
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.artisan.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
-    const matchesRegion = selectedRegion === 'All' || product.region === selectedRegion;
-    return matchesSearch && matchesCategory && matchesRegion;
-  });
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
+      const matchesSearch = searchQuery === '' || 
+        product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        artisans[product.artisanId]?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+      const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
+      const matchesRegion = selectedRegion === 'All' || product.state === selectedRegion;
+      
+      return matchesSearch && matchesCategory && matchesRegion;
+    });
+  }, [searchQuery, selectedCategory, selectedRegion]);
+
+  const clearFilters = () => {
+    setSelectedCategory('All');
+    setSelectedRegion('All');
+    setSearchQuery('');
+  };
 
   return (
     <div className="min-h-screen">
       <Navbar />
 
-      {/* Hero Section */}
       <section className="bg-gradient-craft py-12 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -56,7 +58,6 @@ export default function Explore() {
             </p>
           </motion.div>
 
-          {/* Search Bar */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -75,10 +76,8 @@ export default function Explore() {
         </div>
       </section>
 
-      {/* Filters and Products */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Filters */}
           <div className="mb-8 space-y-4">
             <div className="flex items-center gap-2 mb-4">
               <SlidersHorizontal className="h-5 w-5 text-muted-foreground" />
@@ -118,57 +117,53 @@ export default function Explore() {
             </div>
           </div>
 
-          {/* Results Count */}
           <div className="mb-6">
             <p className="text-muted-foreground">
               Showing <span className="font-semibold text-foreground">{filteredProducts.length}</span> products
             </p>
           </div>
 
-          {/* Products Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product, index) => (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <Card className="overflow-hidden hover:shadow-warm transition-all duration-300 cursor-pointer group" onClick={() => navigate(`/product/${product.id}`)}>
-                  <div className="aspect-square overflow-hidden">
-                    <img
-                      src={product.image}
-                      alt={product.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                  </div>
-                  <CardContent className="p-4">
-                    <Badge variant="secondary" className="mb-2">{product.category}</Badge>
-                    <h3 className="font-semibold mb-1 line-clamp-1">{product.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-1">by {product.artisan}</p>
-                    <p className="text-xs text-muted-foreground mb-3">{product.region}</p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold text-primary">{product.price}</span>
-                      <Button variant="outline" size="sm">View</Button>
+            {filteredProducts.map((product, index) => {
+              const artisan = artisans[product.artisanId];
+              return (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <Card className="overflow-hidden hover:shadow-warm transition-all duration-300 cursor-pointer group" onClick={() => navigate(`/product/${product.id}`)}>
+                    <div className="aspect-square overflow-hidden">
+                      <img
+                        src={product.image}
+                        alt={product.title}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+                    <CardContent className="p-4">
+                      <div className="flex gap-1 mb-2">
+                        {product.featured && <Badge variant="secondary" className="text-xs">Featured</Badge>}
+                        {product.trending && <Badge className="text-xs bg-gradient-hero">Trending</Badge>}
+                      </div>
+                      <h3 className="font-semibold mb-1 line-clamp-1">{product.title}</h3>
+                      <p className="text-sm text-muted-foreground mb-1">by {artisan?.name}</p>
+                      <p className="text-xs text-muted-foreground mb-3">{product.region}</p>
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-bold text-primary">{product.priceFormatted}</span>
+                        <Button variant="outline" size="sm">View</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
           </div>
 
           {filteredProducts.length === 0 && (
             <div className="text-center py-12">
               <p className="text-muted-foreground text-lg">No products found matching your criteria.</p>
-              <Button
-                variant="outline"
-                className="mt-4"
-                onClick={() => {
-                  setSearchQuery('');
-                  setSelectedCategory('All');
-                  setSelectedRegion('All');
-                }}
-              >
+              <Button variant="outline" className="mt-4" onClick={clearFilters}>
                 Clear Filters
               </Button>
             </div>

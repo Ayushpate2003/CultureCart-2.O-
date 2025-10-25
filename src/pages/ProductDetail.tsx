@@ -5,32 +5,33 @@ import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, ShoppingCart, Heart, Share2, MapPin, Award } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Heart, Share2, MapPin, Award, Package, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ProductViewer3D } from '@/components/ProductViewer3D';
-
-const productDetails = {
-  '1': {
-    id: 1,
-    title: 'Madhubani Painting',
-    artisan: 'Sita Devi',
-    region: 'Bihar',
-    price: '₹2,499',
-    category: 'Painting',
-    description: 'This exquisite Madhubani painting showcases the traditional art form from Bihar, featuring intricate patterns and vibrant colors that tell stories of mythology and nature.',
-    materials: 'Natural dyes on handmade paper',
-    dimensions: '16" x 20"',
-    story: 'Madhubani art, originating from the Mithila region of Bihar, has been practiced for over 2,500 years. Sita Devi learned this art from her grandmother and has been creating masterpieces for over 20 years.',
-    image: 'https://images.unsplash.com/photo-1582747652673-603191e6d597?w=800&q=80',
-  },
-};
+import { getProductById } from '@/data/products';
+import { artisans } from '@/data/artisans';
 
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const product = productDetails[id as keyof typeof productDetails] || productDetails['1'];
+  const product = getProductById(Number(id));
+  
+  if (!product) {
+    return (
+      <div className="min-h-screen">
+        <Navbar />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+          <h1 className="text-3xl font-bold mb-4">Product Not Found</h1>
+          <Button onClick={() => navigate('/explore')}>Browse All Crafts</Button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  const artisan = artisans[product.artisanId];
 
   const handleAddToCart = () => {
     toast({
@@ -79,13 +80,23 @@ export default function ProductDetail() {
             className="space-y-6"
           >
             <div>
-              <Badge variant="secondary" className="mb-2">{product.category}</Badge>
+              <div className="flex gap-2 mb-3">
+                <Badge variant="secondary">{product.category}</Badge>
+                {product.featured && <Badge className="bg-gradient-hero">Featured</Badge>}
+                {product.trending && <Badge variant="outline">Trending</Badge>}
+                {product.newArrival && <Badge variant="outline">New Arrival</Badge>}
+              </div>
               <h1 className="text-4xl font-bold mb-2">{product.title}</h1>
               <div className="flex items-center gap-2 text-muted-foreground mb-4">
                 <MapPin className="h-4 w-4" />
-                <span>{product.region}</span>
+                <span>{product.region}, {product.state}</span>
               </div>
-              <div className="text-3xl font-bold text-primary mb-6">{product.price}</div>
+              <div className="text-3xl font-bold text-primary mb-2">{product.priceFormatted}</div>
+              {product.inStock ? (
+                <p className="text-sm text-green-600 font-medium mb-6">In Stock</p>
+              ) : (
+                <p className="text-sm text-red-600 font-medium mb-6">Out of Stock</p>
+              )}
             </div>
 
             <div className="flex gap-4">
@@ -93,9 +104,10 @@ export default function ProductDetail() {
                 className="flex-1 bg-gradient-hero"
                 size="lg"
                 onClick={handleAddToCart}
+                disabled={!product.inStock}
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
-                Add to Cart
+                {product.inStock ? 'Add to Cart' : 'Out of Stock'}
               </Button>
               <Button
                 variant="outline"
@@ -125,26 +137,73 @@ export default function ProductDetail() {
                     <h3 className="font-medium mb-1">Dimensions</h3>
                     <p className="text-sm text-muted-foreground">{product.dimensions}</p>
                   </div>
+                  {product.weight && (
+                    <div>
+                      <h3 className="font-medium mb-1">Weight</h3>
+                      <p className="text-sm text-muted-foreground">{product.weight}</p>
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="font-medium mb-1">Technique</h3>
+                    <p className="text-sm text-muted-foreground">{product.technique}</p>
+                  </div>
                 </div>
+                
+                {product.certifications && product.certifications.length > 0 && (
+                  <div className="pt-4 border-t">
+                    <h3 className="font-medium mb-2 flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      Certifications
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {product.certifications.map((cert) => (
+                        <Badge key={cert} variant="outline" className="text-xs">
+                          {cert}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
+            {artisan && (
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <img 
+                      src={artisan.image} 
+                      alt={artisan.name}
+                      className="w-20 h-20 rounded-full object-cover"
+                    />
+                    <div className="flex-1">
+                      <h3 className="font-semibold mb-1">Meet the Artisan</h3>
+                      <p className="font-medium text-foreground mb-1">{artisan.name}</p>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {artisan.craft} • {artisan.region}, {artisan.state}
+                      </p>
+                      <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+                        {artisan.storySummary}
+                      </p>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Award className="h-3 w-3" />
+                        <span>{artisan.yearsOfExperience} years of experience</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Card>
               <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-accent/10 rounded-full">
-                    <Award className="h-6 w-6 text-accent" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Artisan Story</h3>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      By <span className="font-medium text-foreground">{product.artisan}</span>
-                    </p>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {product.story}
-                    </p>
-                  </div>
-                </div>
+                <h3 className="font-semibold mb-3 flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  Craft Story
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {product.story}
+                </p>
               </CardContent>
             </Card>
           </motion.div>

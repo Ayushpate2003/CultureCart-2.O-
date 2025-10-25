@@ -30,7 +30,10 @@ export default function ArtisanDashboard() {
               <h1 className="text-4xl font-bold mb-2">Artisan Studio</h1>
               <p className="text-muted-foreground">Manage your crafts and track performance</p>
             </div>
-            <Button className="bg-gradient-hero gap-2">
+            <Button 
+              className="bg-gradient-hero gap-2"
+              onClick={() => navigate('/artisan/upload')}
+            >
               <Upload className="h-4 w-4" />
               Upload New Craft
             </Button>

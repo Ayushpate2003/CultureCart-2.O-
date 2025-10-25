@@ -4,10 +4,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useUploadCraftStore } from '@/stores/uploadCraftStore';
-import { ArrowRight, ArrowLeft, Sparkles } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Sparkles, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import { basicDetailsSchema } from '@/lib/validations/uploadCraft';
+import { useToast } from '@/hooks/use-toast';
 
 export function Step3_BasicDetails() {
   const { formData, updateFormData, nextStep, prevStep } = useUploadCraftStore();
+  const { toast } = useToast();
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const handleSuggestPrice = () => {
     // Mock AI price suggestion based on dimensions
@@ -18,6 +23,38 @@ export function Step3_BasicDetails() {
       (parseFloat(formData.height) || 1) / 100;
     const suggestedPrice = Math.round(basePrice + dimensionFactor * 100);
     updateFormData({ price: suggestedPrice.toString() });
+    toast({
+      title: 'AI Suggestion',
+      description: `Suggested price: ₹${suggestedPrice}`,
+    });
+  };
+
+  const handleContinue = () => {
+    try {
+      basicDetailsSchema.parse({
+        price: formData.price,
+        quantity: formData.quantity,
+        length: formData.length,
+        width: formData.width,
+        height: formData.height,
+        weight: formData.weight,
+        customizable: formData.customizable,
+      });
+      setValidationError(null);
+      nextStep();
+      toast({
+        title: 'Details saved',
+        description: 'Proceeding to AI preview',
+      });
+    } catch (error: any) {
+      const errorMessage = error.errors?.[0]?.message || 'Please fill all required fields';
+      setValidationError(errorMessage);
+      toast({
+        title: 'Validation Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    }
   };
 
   const canProceed = 
@@ -139,6 +176,13 @@ export function Step3_BasicDetails() {
         />
       </div>
 
+      {validationError && (
+        <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <p className="text-sm">{validationError}</p>
+        </div>
+      )}
+
       <div className="flex justify-between">
         <Button variant="outline" size="lg" onClick={prevStep}>
           <ArrowLeft className="w-5 h-5 mr-2" />
@@ -148,7 +192,7 @@ export function Step3_BasicDetails() {
           size="lg"
           className="bg-gradient-hero"
           disabled={!canProceed}
-          onClick={nextStep}
+          onClick={handleContinue}
         >
           Continue
           <ArrowRight className="w-5 h-5 ml-2" />

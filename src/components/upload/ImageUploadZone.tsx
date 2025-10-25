@@ -1,8 +1,10 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
+import imageCompression from 'browser-image-compression';
+import { useToast } from '@/hooks/use-toast';
 
 interface ImageUploadZoneProps {
   images: File[];
@@ -17,13 +19,55 @@ export function ImageUploadZone({
   onImagesChange,
   maxFiles = 5,
 }: ImageUploadZoneProps) {
+  const [isCompressing, setIsCompressing] = useState(false);
+  const { toast } = useToast();
+
+  const compressImage = async (file: File): Promise<File> => {
+    try {
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      };
+      return await imageCompression(file, options);
+    } catch (error) {
+      console.error('Compression error:', error);
+      return file; // Return original if compression fails
+    }
+  };
+
   const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
-      const newFiles = [...images, ...acceptedFiles].slice(0, maxFiles);
-      const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
-      onImagesChange(newFiles, newPreviews);
+    async (acceptedFiles: File[]) => {
+      if (acceptedFiles.length === 0) return;
+      
+      setIsCompressing(true);
+      
+      try {
+        // Compress all images
+        const compressedFiles = await Promise.all(
+          acceptedFiles.map(file => compressImage(file))
+        );
+        
+        const newFiles = [...images, ...compressedFiles].slice(0, maxFiles);
+        const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+        
+        onImagesChange(newFiles, newPreviews);
+        
+        toast({
+          title: 'Images uploaded',
+          description: `${compressedFiles.length} image(s) compressed and uploaded successfully`,
+        });
+      } catch (error) {
+        toast({
+          title: 'Upload failed',
+          description: 'Failed to compress images. Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsCompressing(false);
+      }
     },
-    [images, maxFiles, onImagesChange]
+    [images, maxFiles, onImagesChange, toast]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -48,19 +92,29 @@ export function ImageUploadZone({
             isDragActive
               ? 'border-accent bg-accent/10'
               : 'border-border hover:border-primary'
-          }`}
+          } ${isCompressing ? 'opacity-50 pointer-events-none' : ''}`}
         >
-          <input {...getInputProps()} />
+          <input {...getInputProps()} disabled={isCompressing} />
           <div className="flex flex-col items-center gap-3">
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <Upload className="w-8 h-8 text-primary" />
+              {isCompressing ? (
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+              ) : (
+                <Upload className="w-8 h-8 text-primary" />
+              )}
             </div>
             <div>
               <p className="text-lg font-medium mb-1">
-                {isDragActive ? 'Drop your images here' : 'Drag & drop images'}
+                {isCompressing 
+                  ? 'Compressing images...' 
+                  : isDragActive 
+                  ? 'Drop your images here' 
+                  : 'Drag & drop images'}
               </p>
               <p className="text-sm text-muted-foreground">
-                or click to browse • {images.length}/{maxFiles} uploaded
+                {isCompressing 
+                  ? 'Please wait...' 
+                  : `or click to browse • ${images.length}/${maxFiles} uploaded`}
               </p>
             </div>
           </div>

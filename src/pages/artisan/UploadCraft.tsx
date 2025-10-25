@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { ProgressStepper } from '@/components/upload/ProgressStepper';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useUploadCraftStore } from '@/stores/uploadCraftStore';
 import { Step1_ImageUpload } from './Step1_ImageUpload';
 import { Step2_VoiceDescription } from './Step2_VoiceDescription';
@@ -30,28 +31,30 @@ export default function UploadCraft() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
+    <ErrorBoundary>
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
 
-      <div className="flex-1 bg-gradient-craft">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-background rounded-2xl shadow-warm p-8"
-          >
-            <ProgressStepper currentStep={currentStep} />
+        <div className="flex-1 bg-gradient-craft">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-background rounded-2xl shadow-warm p-8"
+            >
+              <ProgressStepper currentStep={currentStep} />
 
-            <div className="mt-8">
-              <AnimatePresence mode="wait">
-                {renderStep()}
-              </AnimatePresence>
-            </div>
-          </motion.div>
+              <div className="mt-8">
+                <AnimatePresence mode="wait">
+                  {renderStep()}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          </div>
         </div>
-      </div>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </ErrorBoundary>
   );
 }

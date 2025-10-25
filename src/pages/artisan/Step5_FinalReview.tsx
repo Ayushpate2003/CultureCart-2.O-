@@ -2,36 +2,53 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useUploadCraftStore } from '@/stores/uploadCraftStore';
-import { ArrowLeft, Send, Check } from 'lucide-react';
+import { ArrowLeft, Send, Check, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { SuccessModal } from '@/components/upload/SuccessModal';
 import { useToast } from '@/hooks/use-toast';
+import { ProductReviewSkeleton } from '@/components/upload/UploadSkeleton';
 
 export function Step5_FinalReview() {
   const { formData, prevStep, resetForm } = useUploadCraftStore();
+  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-
-    // Mock submission - simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    toast({
-      title: "Craft submitted successfully!",
-      description: "Your craft is now under review.",
-    });
-
-    setIsSubmitting(false);
-    setShowSuccess(true);
+    
+    try {
+      // Mock submission - simulating API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast({
+        title: 'Craft Submitted!',
+        description: 'Your craft has been submitted for review',
+      });
+      
+      setShowSuccess(true);
+    } catch (error) {
+      toast({
+        title: 'Submission Failed',
+        description: 'Failed to submit craft. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleCloseSuccess = () => {
     setShowSuccess(false);
     resetForm();
+    navigate('/dashboard/artisan');
   };
+
+  if (isSubmitting) {
+    return <ProductReviewSkeleton />;
+  }
 
   return (
     <>
@@ -149,15 +166,18 @@ export function Step5_FinalReview() {
           <Button
             size="lg"
             className="bg-gradient-hero"
-            onClick={handleSubmit}
             disabled={isSubmitting}
+            onClick={handleSubmit}
           >
             {isSubmitting ? (
-              <>Submitting...</>
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                Submitting...
+              </>
             ) : (
               <>
-                Submit for Review
-                <Send className="w-5 h-5 ml-2" />
+                Submit for Approval
+                <Check className="w-5 h-5 ml-2" />
               </>
             )}
           </Button>

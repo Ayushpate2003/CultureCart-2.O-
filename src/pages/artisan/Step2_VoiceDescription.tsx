@@ -5,20 +5,48 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { VoiceRecorder } from '@/components/upload/VoiceRecorder';
 import { useUploadCraftStore } from '@/stores/uploadCraftStore';
-import { ArrowRight, ArrowLeft, Mic, Type } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Mic, Type, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { voiceDescriptionSchema } from '@/lib/validations/uploadCraft';
+import { useToast } from '@/hooks/use-toast';
 
 export function Step2_VoiceDescription() {
   const { formData, updateFormData, nextStep, prevStep } = useUploadCraftStore();
+  const { toast } = useToast();
   const [inputMode, setInputMode] = useState<'voice' | 'text'>('voice');
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const handleRecordingComplete = (blob: Blob, url: string) => {
     updateFormData({ audioBlob: blob, audioUrl: url });
+    setValidationError(null);
   };
 
   const handleDeleteRecording = () => {
     updateFormData({ audioBlob: null, audioUrl: null });
+  };
+
+  const handleContinue = () => {
+    try {
+      voiceDescriptionSchema.parse({
+        voiceDescription: formData.voiceDescription,
+        audioBlob: formData.audioBlob,
+        language: formData.language,
+      });
+      nextStep();
+      toast({
+        title: 'Description saved',
+        description: 'Proceeding to basic details',
+      });
+    } catch (error: any) {
+      const errorMessage = error.errors?.[0]?.message || 'Please provide a description';
+      setValidationError(errorMessage);
+      toast({
+        title: 'Validation Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    }
   };
 
   const canProceed = formData.voiceDescription.trim() || formData.audioUrl;
@@ -95,6 +123,13 @@ export function Step2_VoiceDescription() {
         </Tabs>
       </div>
 
+      {validationError && (
+        <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <p className="text-sm">{validationError}</p>
+        </div>
+      )}
+
       <div className="flex justify-between">
         <Button variant="outline" size="lg" onClick={prevStep}>
           <ArrowLeft className="w-5 h-5 mr-2" />
@@ -104,7 +139,7 @@ export function Step2_VoiceDescription() {
           size="lg"
           className="bg-gradient-hero"
           disabled={!canProceed}
-          onClick={nextStep}
+          onClick={handleContinue}
         >
           Continue
           <ArrowRight className="w-5 h-5 ml-2" />

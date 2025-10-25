@@ -6,13 +6,17 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { AILoadingAnimation } from '@/components/upload/AILoadingAnimation';
 import { useUploadCraftStore } from '@/stores/uploadCraftStore';
-import { ArrowRight, ArrowLeft, Sparkles, X } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Sparkles, X, AlertCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { aiPreviewSchema } from '@/lib/validations/uploadCraft';
+import { useToast } from '@/hooks/use-toast';
 
 export function Step4_AIPreview() {
   const { formData, updateFormData, nextStep, prevStep } = useUploadCraftStore();
+  const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!hasGenerated && !formData.aiGeneratedTitle) {
@@ -23,22 +27,36 @@ export function Step4_AIPreview() {
   const generateAIContent = async () => {
     setIsGenerating(true);
     
-    // Mock AI generation - simulating API call
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    try {
+      // Mock AI generation - simulating API call
+      await new Promise(resolve => setTimeout(resolve, 3000));
 
-    // Generate mock content based on form data
-    const mockTitle = `Handcrafted ${formData.customizable ? 'Custom ' : ''}Art Piece`;
-    const mockStory = `This exquisite piece showcases traditional craftsmanship passed down through generations. ${formData.voiceDescription.slice(0, 200)}... Meticulously created with attention to detail, measuring ${formData.length}x${formData.width}cm.`;
-    const mockTags = ['Handmade', 'Traditional', 'Authentic', 'Cultural', 'Artisan', 'Unique'];
+      // Generate mock content based on form data
+      const mockTitle = `Handcrafted ${formData.customizable ? 'Custom ' : ''}Art Piece`;
+      const mockStory = `This exquisite piece showcases traditional craftsmanship passed down through generations. ${formData.voiceDescription.slice(0, 200)}... Meticulously created with attention to detail, measuring ${formData.length}x${formData.width}cm.`;
+      const mockTags = ['Handmade', 'Traditional', 'Authentic', 'Cultural', 'Artisan', 'Unique'];
 
-    updateFormData({
-      aiGeneratedTitle: mockTitle,
-      aiGeneratedStory: mockStory,
-      aiGeneratedTags: mockTags,
-    });
+      updateFormData({
+        aiGeneratedTitle: mockTitle,
+        aiGeneratedStory: mockStory,
+        aiGeneratedTags: mockTags,
+      });
 
-    setIsGenerating(false);
-    setHasGenerated(true);
+      toast({
+        title: 'AI Content Generated',
+        description: 'Review and edit the generated content',
+      });
+      
+      setHasGenerated(true);
+    } catch (error) {
+      toast({
+        title: 'Generation Failed',
+        description: 'Failed to generate AI content. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const removeTag = (tagToRemove: string) => {
@@ -49,8 +67,40 @@ export function Step4_AIPreview() {
 
   const addTag = (newTag: string) => {
     if (newTag.trim() && !formData.aiGeneratedTags.includes(newTag.trim())) {
+      if (formData.aiGeneratedTags.length >= 10) {
+        toast({
+          title: 'Tag Limit Reached',
+          description: 'Maximum 10 tags allowed',
+          variant: 'destructive',
+        });
+        return;
+      }
       updateFormData({
         aiGeneratedTags: [...formData.aiGeneratedTags, newTag.trim()],
+      });
+    }
+  };
+
+  const handleContinue = () => {
+    try {
+      aiPreviewSchema.parse({
+        aiGeneratedTitle: formData.aiGeneratedTitle,
+        aiGeneratedStory: formData.aiGeneratedStory,
+        aiGeneratedTags: formData.aiGeneratedTags,
+      });
+      setValidationError(null);
+      nextStep();
+      toast({
+        title: 'AI Content Approved',
+        description: 'Proceeding to final review',
+      });
+    } catch (error: any) {
+      const errorMessage = error.errors?.[0]?.message || 'Please complete all required fields';
+      setValidationError(errorMessage);
+      toast({
+        title: 'Validation Error',
+        description: errorMessage,
+        variant: 'destructive',
       });
     }
   };
@@ -148,6 +198,13 @@ export function Step4_AIPreview() {
         </div>
       </div>
 
+      {validationError && (
+        <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <p className="text-sm">{validationError}</p>
+        </div>
+      )}
+
       <div className="flex justify-between">
         <Button variant="outline" size="lg" onClick={prevStep}>
           <ArrowLeft className="w-5 h-5 mr-2" />
@@ -159,6 +216,7 @@ export function Step4_AIPreview() {
             size="lg"
             onClick={generateAIContent}
             className="gap-2"
+            disabled={isGenerating}
           >
             <Sparkles className="w-5 h-5" />
             Regenerate
@@ -166,7 +224,7 @@ export function Step4_AIPreview() {
           <Button
             size="lg"
             className="bg-gradient-hero"
-            onClick={nextStep}
+            onClick={handleContinue}
           >
             Continue
             <ArrowRight className="w-5 h-5 ml-2" />

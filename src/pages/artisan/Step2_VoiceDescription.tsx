@@ -49,7 +49,7 @@ export function Step2_VoiceDescription() {
     }
   };
 
-  const canProceed = formData.voiceDescription.trim() || formData.audioUrl;
+  const canProceed = formData.voiceDescription.trim().length >= 20;
 
   return (
     <motion.div

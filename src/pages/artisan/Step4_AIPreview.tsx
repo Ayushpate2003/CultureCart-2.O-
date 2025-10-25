@@ -22,7 +22,7 @@ export function Step4_AIPreview() {
     if (!hasGenerated && !formData.aiGeneratedTitle) {
       generateAIContent();
     }
-  }, []);
+  }, [hasGenerated, formData.aiGeneratedTitle]);
 
   const generateAIContent = async () => {
     setIsGenerating(true);

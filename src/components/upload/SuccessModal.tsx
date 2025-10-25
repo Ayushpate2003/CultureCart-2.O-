@@ -10,6 +10,12 @@ interface SuccessModalProps {
 export function SuccessModal({ onClose }: SuccessModalProps) {
   const navigate = useNavigate();
 
+  const handleUploadAnother = () => {
+    onClose();
+    // Navigate to upload page to restart the workflow
+    navigate('/artisan/upload');
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -52,7 +58,7 @@ export function SuccessModal({ onClose }: SuccessModalProps) {
               Back to Dashboard
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="outline" onClick={handleUploadAnother}>
               Upload Another
             </Button>
           </div>

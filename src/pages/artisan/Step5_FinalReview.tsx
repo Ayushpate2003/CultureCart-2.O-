@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useUploadCraftStore } from '@/stores/uploadCraftStore';
+import { useArtisanProductsStore } from '@/stores/artisanProductsStore';
 import { ArrowLeft, Send, Check, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -11,9 +12,11 @@ import { ProductReviewSkeleton } from '@/components/upload/UploadSkeleton';
 
 export function Step5_FinalReview() {
   const { formData, prevStep, resetForm } = useUploadCraftStore();
+  const { addProduct } = useArtisanProductsStore();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [uploadedProductId, setUploadedProductId] = useState<string>('');
   const navigate = useNavigate();
 
   const handleSubmit = async () => {
@@ -22,6 +25,15 @@ export function Step5_FinalReview() {
     try {
       // Mock submission - simulating API call
       await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Add product to store
+      const productId = addProduct({
+        title: formData.aiGeneratedTitle,
+        price: formData.price,
+        thumbnail: formData.imagePreviews[0] || '',
+      });
+      
+      setUploadedProductId(productId);
       
       toast({
         title: 'Craft Submitted!',
@@ -184,7 +196,12 @@ export function Step5_FinalReview() {
         </div>
       </motion.div>
 
-      {showSuccess && <SuccessModal onClose={handleCloseSuccess} />}
+      {showSuccess && (
+        <SuccessModal 
+          onClose={handleCloseSuccess} 
+          productId={uploadedProductId}
+        />
+      )}
     </>
   );
 }

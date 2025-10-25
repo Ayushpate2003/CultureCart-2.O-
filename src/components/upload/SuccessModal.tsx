@@ -1,19 +1,24 @@
 import { motion } from 'framer-motion';
-import { CheckCircle2, ArrowRight } from 'lucide-react';
+import { CheckCircle2, ArrowRight, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
 interface SuccessModalProps {
   onClose: () => void;
+  productId?: string;
 }
 
-export function SuccessModal({ onClose }: SuccessModalProps) {
+export function SuccessModal({ onClose, productId }: SuccessModalProps) {
   const navigate = useNavigate();
 
   const handleUploadAnother = () => {
     onClose();
-    // Navigate to upload page to restart the workflow
     navigate('/artisan/upload');
+  };
+
+  const handleViewProduct = () => {
+    onClose();
+    navigate('/dashboard/artisan');
   };
 
   return (
@@ -53,14 +58,27 @@ export function SuccessModal({ onClose }: SuccessModalProps) {
             <Button
               size="lg"
               className="bg-gradient-hero"
-              onClick={() => navigate('/dashboard/artisan')}
+              onClick={handleViewProduct}
             >
-              Back to Dashboard
-              <ArrowRight className="w-5 h-5 ml-2" />
+              <Eye className="w-5 h-5 mr-2" />
+              View Product
             </Button>
-            <Button variant="outline" onClick={handleUploadAnother}>
-              Upload Another
-            </Button>
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => navigate('/dashboard/artisan')}
+              >
+                Back to Dashboard
+              </Button>
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={handleUploadAnother}
+              >
+                Upload Another
+              </Button>
+            </div>
           </div>
         </div>
       </motion.div>

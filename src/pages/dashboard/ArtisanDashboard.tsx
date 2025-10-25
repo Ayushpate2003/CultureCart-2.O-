@@ -3,18 +3,46 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Package, Eye, ShoppingCart, TrendingUp, Upload } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Package, Eye, ShoppingCart, TrendingUp, Upload, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-const stats = [
-  { icon: Package, label: 'Active Products', value: '12', change: '+2 this month' },
-  { icon: Eye, label: 'Total Views', value: '1,847', change: '+156 this week' },
-  { icon: ShoppingCart, label: 'Total Sales', value: '87', change: '+12 this month' },
-  { icon: TrendingUp, label: 'Revenue', value: '₹2.4L', change: '+18% growth' },
-];
+import { useArtisanProductsStore } from '@/stores/artisanProductsStore';
+import { useEffect } from 'react';
 
 export default function ArtisanDashboard() {
   const navigate = useNavigate();
+  const { products, getTotalProducts, removeNewFlag } = useArtisanProductsStore();
+
+  useEffect(() => {
+    // Remove new flag after animation duration
+    const newProducts = products.filter(p => p.isNew);
+    if (newProducts.length > 0) {
+      const timer = setTimeout(() => {
+        newProducts.forEach(p => removeNewFlag(p.id));
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [products, removeNewFlag]);
+
+  const totalProducts = getTotalProducts();
+
+  const stats = [
+    { icon: Package, label: 'Active Products', value: totalProducts.toString(), change: '+' + products.filter(p => p.isNew).length + ' this month' },
+    { icon: Eye, label: 'Total Views', value: '1,847', change: '+156 this week' },
+    { icon: ShoppingCart, label: 'Total Sales', value: '87', change: '+12 this month' },
+    { icon: TrendingUp, label: 'Revenue', value: '₹2.4L', change: '+18% growth' },
+  ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'approved':
+        return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+      case 'rejected':
+        return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+      default:
+        return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -69,30 +97,70 @@ export default function ArtisanDashboard() {
                 <CardTitle>Your Products</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex gap-4 py-3 border-b">
-                    <div className="w-20 h-20 bg-muted rounded-lg"></div>
-                    <div className="flex-1">
-                      <p className="font-medium mb-1">Madhubani Painting</p>
-                      <p className="text-sm text-muted-foreground mb-2">₹2,499 • 45 views</p>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">Edit</Button>
-                        <Button variant="ghost" size="sm">View</Button>
-                      </div>
-                    </div>
+                {products.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-muted-foreground mb-4">No products yet</p>
+                    <Button 
+                      variant="outline"
+                      onClick={() => navigate('/artisan/upload')}
+                    >
+                      Upload Your First Craft
+                    </Button>
                   </div>
-                  <div className="flex gap-4 py-3 border-b">
-                    <div className="w-20 h-20 bg-muted rounded-lg"></div>
-                    <div className="flex-1">
-                      <p className="font-medium mb-1">Warli Art Canvas</p>
-                      <p className="text-sm text-muted-foreground mb-2">₹1,899 • 32 views</p>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">Edit</Button>
-                        <Button variant="ghost" size="sm">View</Button>
-                      </div>
-                    </div>
+                ) : (
+                  <div className="space-y-4">
+                    {products.map((product, index) => (
+                      <motion.div
+                        key={product.id}
+                        initial={product.isNew ? { opacity: 0, x: -20, scale: 0.95 } : false}
+                        animate={product.isNew ? { opacity: 1, x: 0, scale: 1 } : false}
+                        transition={{ duration: 0.5, delay: 0.1 }}
+                        className={`flex gap-4 py-3 border-b relative ${
+                          product.isNew ? 'bg-gradient-to-r from-primary/5 to-transparent rounded-lg p-3' : ''
+                        }`}
+                      >
+                        {product.isNew && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.3, type: 'spring' }}
+                            className="absolute -top-2 -right-2 bg-gradient-hero text-primary-foreground rounded-full p-1"
+                          >
+                            <Sparkles className="h-4 w-4" />
+                          </motion.div>
+                        )}
+                        <div className="w-20 h-20 bg-muted rounded-lg overflow-hidden flex-shrink-0">
+                          {product.thumbnail && (
+                            <img 
+                              src={product.thumbnail} 
+                              alt={product.title}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <p className="font-medium truncate">{product.title}</p>
+                            <Badge 
+                              variant="outline" 
+                              className={getStatusColor(product.status)}
+                            >
+                              {product.status}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            ₹{product.price} • {product.views} views
+                          </p>
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm">Edit</Button>
+                            <Button variant="ghost" size="sm">View</Button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 

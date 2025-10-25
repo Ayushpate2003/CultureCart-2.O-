@@ -2,9 +2,13 @@ import { z } from 'zod';
 
 // Step 1: Image Upload Validation
 export const imageUploadSchema = z.object({
-  images: z.array(z.instanceof(File))
+  images: z.array(z.any())
     .min(1, 'Please upload at least 1 image')
-    .max(5, 'Maximum 5 images allowed'),
+    .max(5, 'Maximum 5 images allowed')
+    .refine(
+      (files) => files.every((file) => file instanceof File || file instanceof Blob),
+      'All items must be valid files'
+    ),
 });
 
 // Step 2: Voice Description Validation
@@ -12,7 +16,7 @@ export const voiceDescriptionSchema = z.object({
   voiceDescription: z.string()
     .min(20, 'Description must be at least 20 characters')
     .max(1000, 'Description must not exceed 1000 characters'),
-  audioBlob: z.instanceof(Blob).nullable(),
+  audioBlob: z.any().nullable(),
   language: z.enum(['en', 'hi', 'bn', 'ta', 'te', 'mr']),
 });
 

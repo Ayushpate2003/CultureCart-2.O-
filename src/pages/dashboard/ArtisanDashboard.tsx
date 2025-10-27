@@ -4,7 +4,7 @@ import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Package, Eye, ShoppingCart, TrendingUp, Upload, Sparkles } from 'lucide-react';
+import { Package, Eye, ShoppingCart, TrendingUp, Upload, Sparkles, MoreHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useArtisanProductsStore } from '@/stores/artisanProductsStore';
 import { useEffect } from 'react';
@@ -94,7 +94,16 @@ export default function ArtisanDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Your Products</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Your Products</CardTitle>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => navigate('/artisan/products')}
+                  >
+                    View All <MoreHorizontal className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {products.length === 0 ? (
@@ -110,7 +119,7 @@ export default function ArtisanDashboard() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {products.map((product, index) => (
+                    {products.slice(0, 3).map((product, index) => (
                       <motion.div
                         key={product.id}
                         initial={product.isNew ? { opacity: 0, x: -20, scale: 0.95 } : false}
@@ -166,7 +175,16 @@ export default function ArtisanDashboard() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Recent Orders</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Recent Orders</CardTitle>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => navigate('/artisan/orders')}
+                  >
+                    View All <MoreHorizontal className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">

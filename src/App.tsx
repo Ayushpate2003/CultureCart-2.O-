@@ -25,6 +25,11 @@ import Analytics from "./pages/artisan/Analytics";
 import Earnings from "./pages/artisan/Earnings";
 import Messages from "./pages/artisan/Messages";
 import HelpCenter from "./pages/artisan/HelpCenter";
+import BuyerAnalytics from "./pages/buyer/Analytics";
+import BuyerEarnings from "./pages/buyer/Earnings";
+import BuyerMessages from "./pages/buyer/Messages";
+import AIStudio from "./pages/buyer/AIStudio";
+import BuyerHelpCenter from "./pages/buyer/HelpCenter";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -133,6 +138,46 @@ const App = () => (
             element={
               <ProtectedRoute allowedRoles={['artisan']}>
                 <HelpCenter />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/buyer/analytics"
+            element={
+              <ProtectedRoute allowedRoles={['buyer']}>
+                <BuyerAnalytics />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/buyer/earnings"
+            element={
+              <ProtectedRoute allowedRoles={['buyer']}>
+                <BuyerEarnings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/buyer/messages"
+            element={
+              <ProtectedRoute allowedRoles={['buyer']}>
+                <BuyerMessages />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/buyer/ai-studio"
+            element={
+              <ProtectedRoute allowedRoles={['buyer']}>
+                <AIStudio />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/buyer/help"
+            element={
+              <ProtectedRoute allowedRoles={['buyer']}>
+                <BuyerHelpCenter />
               </ProtectedRoute>
             }
           />

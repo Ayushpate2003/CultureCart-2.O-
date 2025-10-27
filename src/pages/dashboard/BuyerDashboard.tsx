@@ -109,17 +109,25 @@ export default function BuyerDashboard() {
                   <ShoppingBag className="mr-2 h-4 w-4" />
                   Browse Crafts
                 </Button>
-                <Button variant="outline" className="w-full">
-                  <Heart className="mr-2 h-4 w-4" />
-                  My Wishlist
-                </Button>
-                <Button variant="outline" className="w-full">
-                  <Package className="mr-2 h-4 w-4" />
-                  Track Orders
-                </Button>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={() => navigate('/buyer/analytics')}>
                   <Star className="mr-2 h-4 w-4" />
-                  Write Review
+                  View Analytics
+                </Button>
+                <Button variant="outline" className="w-full" onClick={() => navigate('/buyer/earnings')}>
+                  <Package className="mr-2 h-4 w-4" />
+                  Earnings & Rewards
+                </Button>
+                <Button variant="outline" className="w-full" onClick={() => navigate('/buyer/messages')}>
+                  <Heart className="mr-2 h-4 w-4" />
+                  Messages
+                </Button>
+                <Button variant="outline" className="w-full" onClick={() => navigate('/buyer/ai-studio')}>
+                  <Star className="mr-2 h-4 w-4" />
+                  AI Assistant
+                </Button>
+                <Button variant="outline" className="w-full" onClick={() => navigate('/buyer/help')}>
+                  <Package className="mr-2 h-4 w-4" />
+                  Help Center
                 </Button>
               </CardContent>
             </Card>

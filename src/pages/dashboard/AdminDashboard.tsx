@@ -2,7 +2,9 @@ import { motion } from 'framer-motion';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Package, TrendingUp, IndianRupee } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Users, Package, TrendingUp, IndianRupee, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const stats = [
   { icon: Users, label: 'Total Users', value: '1,234', change: '+12%', trend: 'up' },
@@ -12,6 +14,15 @@ const stats = [
 ];
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
+
+  const quickActions = [
+    { label: 'Manage Users', path: '/admin/users', icon: Users },
+    { label: 'Manage Products', path: '/admin/products', icon: Package },
+    { label: 'View Analytics', path: '/admin/analytics', icon: TrendingUp },
+    { label: 'Manage Orders', path: '/admin/orders', icon: IndianRupee },
+  ];
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -21,8 +32,28 @@ export default function AdminDashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
-          <p className="text-muted-foreground mb-8">Platform overview and management</p>
+          <div className="flex justify-between items-start mb-8">
+            <div>
+              <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
+              <p className="text-muted-foreground">Platform overview and management</p>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {quickActions.map((action) => (
+              <Button
+                key={action.path}
+                variant="outline"
+                className="h-auto p-4 flex flex-col items-start gap-2"
+                onClick={() => navigate(action.path)}
+              >
+                <action.icon className="h-5 w-5" />
+                <span className="font-medium">{action.label}</span>
+                <ArrowRight className="h-4 w-4 ml-auto" />
+              </Button>
+            ))}
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {stats.map((stat, index) => (

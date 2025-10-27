@@ -10,6 +10,11 @@ import Explore from "./pages/Explore";
 import ProductDetail from "./pages/ProductDetail";
 import About from "./pages/About";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
+import AllUsers from "./pages/admin/AllUsers";
+import AllProducts from "./pages/admin/AllProducts";
+import AllArtisans from "./pages/admin/AllArtisans";
+import AllOrders from "./pages/admin/AllOrders";
+import AdminAnalytics from "./pages/admin/Analytics";
 import ArtisanDashboard from "./pages/dashboard/ArtisanDashboard";
 import BuyerDashboard from "./pages/dashboard/BuyerDashboard";
 import UploadCraft from "./pages/artisan/UploadCraft";
@@ -46,6 +51,11 @@ const App = () => (
               </ProtectedRoute>
             }
           />
+          <Route path="/admin/users" element={<ProtectedRoute allowedRoles={['admin']}><AllUsers /></ProtectedRoute>} />
+          <Route path="/admin/products" element={<ProtectedRoute allowedRoles={['admin']}><AllProducts /></ProtectedRoute>} />
+          <Route path="/admin/artisans" element={<ProtectedRoute allowedRoles={['admin']}><AllArtisans /></ProtectedRoute>} />
+          <Route path="/admin/orders" element={<ProtectedRoute allowedRoles={['admin']}><AllOrders /></ProtectedRoute>} />
+          <Route path="/admin/analytics" element={<ProtectedRoute allowedRoles={['admin']}><AdminAnalytics /></ProtectedRoute>} />
           <Route
             path="/dashboard/artisan"
             element={

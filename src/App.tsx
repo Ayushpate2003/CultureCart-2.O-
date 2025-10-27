@@ -16,6 +16,10 @@ import UploadCraft from "./pages/artisan/UploadCraft";
 import MyProducts from "./pages/artisan/MyProducts";
 import Orders from "./pages/artisan/Orders";
 import ProfileSettings from "./pages/artisan/ProfileSettings";
+import Analytics from "./pages/artisan/Analytics";
+import Earnings from "./pages/artisan/Earnings";
+import Messages from "./pages/artisan/Messages";
+import HelpCenter from "./pages/artisan/HelpCenter";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -87,6 +91,38 @@ const App = () => (
             element={
               <ProtectedRoute allowedRoles={['artisan']}>
                 <ProfileSettings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/artisan/analytics"
+            element={
+              <ProtectedRoute allowedRoles={['artisan']}>
+                <Analytics />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/artisan/earnings"
+            element={
+              <ProtectedRoute allowedRoles={['artisan']}>
+                <Earnings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/artisan/messages"
+            element={
+              <ProtectedRoute allowedRoles={['artisan']}>
+                <Messages />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/artisan/help"
+            element={
+              <ProtectedRoute allowedRoles={['artisan']}>
+                <HelpCenter />
               </ProtectedRoute>
             }
           />

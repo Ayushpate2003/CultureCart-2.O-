@@ -4,9 +4,10 @@ import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Package, Eye, ShoppingCart, TrendingUp, Upload, Sparkles, MoreHorizontal } from 'lucide-react';
+import { Package, Eye, ShoppingCart, TrendingUp, Upload, Sparkles, MoreHorizontal, BarChart3, DollarSign, MessageCircle, HelpCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useArtisanProductsStore } from '@/stores/artisanProductsStore';
+import { AIAssistant } from '@/components/AIAssistant';
 import { useEffect } from 'react';
 
 export default function ArtisanDashboard() {
@@ -89,6 +90,42 @@ export default function ArtisanDashboard() {
                 </Card>
               </motion.div>
             ))}
+          </div>
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <Button
+              variant="outline"
+              className="h-20 flex flex-col gap-2"
+              onClick={() => navigate('/artisan/analytics')}
+            >
+              <BarChart3 className="h-5 w-5" />
+              <span className="text-sm">Analytics</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-20 flex flex-col gap-2"
+              onClick={() => navigate('/artisan/earnings')}
+            >
+              <DollarSign className="h-5 w-5" />
+              <span className="text-sm">Earnings</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-20 flex flex-col gap-2"
+              onClick={() => navigate('/artisan/messages')}
+            >
+              <MessageCircle className="h-5 w-5" />
+              <span className="text-sm">Messages</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-20 flex flex-col gap-2"
+              onClick={() => navigate('/artisan/help')}
+            >
+              <HelpCircle className="h-5 w-5" />
+              <span className="text-sm">Help Center</span>
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -216,6 +253,7 @@ export default function ArtisanDashboard() {
       </div>
 
       <Footer />
+      <AIAssistant />
     </div>
   );
 }

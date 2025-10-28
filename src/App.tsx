@@ -6,9 +6,18 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import ChooseRole from "./pages/auth/ChooseRole";
+import BuyerSignup from "./pages/auth/BuyerSignup";
+import ArtisanSignup from "./pages/auth/ArtisanSignup";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import VerifyEmail from "./pages/auth/VerifyEmail";
+import Terms from "./pages/auth/Terms";
+import Privacy from "./pages/auth/Privacy";
+import SignUpForm from "./components/auth/SignUpForm";
 import Explore from "./pages/Explore";
 import ProductDetail from "./pages/ProductDetail";
 import About from "./pages/About";
+import LocationLanguage from "./pages/onboarding/LocationLanguage";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import AllUsers from "./pages/admin/AllUsers";
 import AllProducts from "./pages/admin/AllProducts";
@@ -43,6 +52,16 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/choose-role" element={<ChooseRole />} />
+          <Route path="/auth/buyer-signup" element={<BuyerSignup />} />
+          <Route path="/auth/artisan-signup" element={<ArtisanSignup />} />
+          <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+          <Route path="/auth/verify-email" element={<VerifyEmail />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/signup" element={<SignUpForm />} />
+          <Route path="/onboarding" element={<LocationLanguage />} />
+          <Route path="/onboarding/location-language" element={<LocationLanguage />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/about" element={<About />} />

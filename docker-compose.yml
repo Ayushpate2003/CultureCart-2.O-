@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: culturecart_postgres
+    environment:
+      POSTGRES_DB: culturecart_db
+      POSTGRES_USER: culturecart_user
+      POSTGRES_PASSWORD: culturecart_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - culturecart_network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: culturecart_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - culturecart_network
+
+  backend:
+    build: ./culturecart-backend
+    container_name: culturecart_backend
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://culturecart_user:culturecart_password@postgres:5432/culturecart_db
+      JWT_SECRET: your-super-secret-jwt-key-change-in-production
+      UPLOAD_PATH: /app/uploads
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./culturecart-backend:/app
+      - uploads_data:/app/uploads
+    depends_on:
+      - postgres
+    networks:
+      - culturecart_network
+    command: npm run dev
+
+volumes:
+  postgres_data:
+  uploads_data:
+
+networks:
+  culturecart_network:
+    driver: bridge

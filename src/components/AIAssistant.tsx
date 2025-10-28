@@ -25,12 +25,42 @@ export function AIAssistant() {
   ]);
   const [inputMessage, setInputMessage] = useState('');
 
-  const suggestions = [
-    'Generate better product title',
-    'Suggest trending keywords',
-    'Summarize recent orders',
-    'Photo enhancement tips',
-  ];
+  const getSuggestions = () => {
+    if (!user) return [];
+
+    switch (user.role) {
+      case 'buyer':
+        return [
+          'Show me trending crafts',
+          'Help me find gifts for Diwali',
+          'Track my order status',
+          'Suggest artisan recommendations'
+        ];
+      case 'artisan':
+        return [
+          'Generate product description',
+          'Suggest pricing strategy',
+          'Help with marketing ideas',
+          'Optimize product photos'
+        ];
+      case 'admin':
+        return [
+          'Show platform analytics',
+          'Review pending verifications',
+          'Generate reports',
+          'User management tips'
+        ];
+      default:
+        return [
+          'Generate better product title',
+          'Suggest trending keywords',
+          'Summarize recent orders',
+          'Photo enhancement tips',
+        ];
+    }
+  };
+
+  const suggestions = getSuggestions();
 
   const handleSendMessage = () => {
     if (!inputMessage.trim()) return;

@@ -14,6 +14,11 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/login" replace />;
   }
 
+  // Check if user needs onboarding
+  if (user && !user.onboardingCompleted) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
     // Redirect to appropriate dashboard based on role
     const roleRoutes: Record<UserRole, string> = {

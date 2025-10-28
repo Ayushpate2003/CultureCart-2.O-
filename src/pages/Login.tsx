@@ -19,14 +19,18 @@ export default function Login() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Redirect authenticated users to their dashboard
+    // Redirect authenticated users to their dashboard or onboarding
     if (isAuthenticated && user) {
-      const roleRoutes: Record<UserRole, string> = {
-        admin: '/dashboard/admin',
-        artisan: '/dashboard/artisan',
-        buyer: '/dashboard/buyer',
-      };
-      navigate(roleRoutes[user.role], { replace: true });
+      if (!user.onboardingCompleted) {
+        navigate('/onboarding', { replace: true });
+      } else {
+        const roleRoutes: Record<UserRole, string> = {
+          admin: '/dashboard/admin',
+          artisan: '/dashboard/artisan',
+          buyer: '/dashboard/buyer',
+        };
+        navigate(roleRoutes[user.role], { replace: true });
+      }
     }
   }, [isAuthenticated, user, navigate]);
 
@@ -59,6 +63,13 @@ export default function Login() {
     };
     setEmail(emails[role]);
     setPassword('password');
+    // Auto-submit the form
+    setTimeout(() => {
+      const form = document.querySelector('form');
+      if (form) {
+        form.requestSubmit();
+      }
+    }, 100);
   };
 
   return (

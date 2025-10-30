@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Sparkles, X, Send, Mic } from 'lucide-react';
+import { Sparkles, X, Send } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Message {
   id: string;
@@ -14,6 +15,7 @@ interface Message {
 }
 
 export function AIAssistant() {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -182,9 +184,6 @@ export function AIAssistant() {
 
                 {/* Input */}
                 <div className="flex gap-2">
-                  <Button variant="outline" size="icon">
-                    <Mic className="h-4 w-4" />
-                  </Button>
                   <Input
                     placeholder="Ask me anything..."
                     value={inputMessage}

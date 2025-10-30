@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, ShoppingBag, Shield, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { BackButton } from '@/components/BackButton';
 
 const ChooseRole: React.FC = () => {
   const navigate = useNavigate();
@@ -52,6 +53,9 @@ const ChooseRole: React.FC = () => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-4xl"
       >
+        <div className="mb-6">
+          <BackButton to="/" />
+        </div>
         <div className="text-center mb-8">
           <motion.h1
             initial={{ opacity: 0, y: -20 }}

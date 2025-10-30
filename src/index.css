@@ -2,54 +2,82 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Critical CSS for above-the-fold content */
+.critical-css {
+  font-family: 'Inter', sans-serif;
+  background: hsl(0 0% 99%);
+  color: hsl(210 40% 16%);
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    /* Indian Craft Palette - CultureCart Design System */
-    --background: 33 42% 91%;
-    --foreground: 30 45% 12%;
+    /* Modern Indian-Inspired Color Palette - CultureCart Design System */
 
-    --card: 33 42% 94%;
-    --card-foreground: 30 45% 12%;
+    /* Primary */
+    --primary: 12 100% 60%;
+    --primary-dark: 12 78% 50%;
 
-    --popover: 33 42% 96%;
-    --popover-foreground: 30 45% 12%;
+    /* Secondary */
+    --secondary: 258 87% 67%;
+    --secondary-dark: 258 90% 65%;
 
-    /* Primary: Saddle Brown - Traditional craft warmth */
-    --primary: 25 64% 31%;
-    --primary-foreground: 33 42% 96%;
+    /* Accent */
+    --accent: 160 84% 39%;
+    --accent-light: 160 84% 52%;
 
-    /* Secondary: Chocolate - Rich earthiness */
-    --secondary: 25 56% 45%;
-    --secondary-foreground: 33 42% 96%;
+    /* Neutral */
+    --parchment: 0 0% 98%;
+    --cream: 30 9% 96%;
+    --ivory: 0 0% 99%;
 
-    /* Accent: Saffron - Cultural vibrancy */
-    --accent: 30 100% 60%;
-    --accent-foreground: 30 45% 12%;
+    /* Text */
+    --text-primary: 210 40% 16%;
+    --text-secondary: 215 28% 34%;
+    --text-muted: 215 16% 47%;
 
-    --muted: 33 30% 85%;
-    --muted-foreground: 30 25% 40%;
+    /* States */
+    --success: 160 84% 39%;
+    --warning: 32 95% 44%;
+    --error: 0 84% 60%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 33 42% 96%;
+    /* Background and UI */
+    --background: 0 0% 99%;
+    --foreground: 210 40% 16%;
 
-    --border: 33 25% 80%;
-    --input: 33 25% 82%;
-    --ring: 25 64% 31%;
+    --card: 0 0% 98%;
+    --card-foreground: 210 40% 16%;
+
+    --popover: 0 0% 99%;
+    --popover-foreground: 210 40% 16%;
+
+    --primary-foreground: 0 0% 99%;
+    --secondary-foreground: 0 0% 99%;
+    --accent-foreground: 210 40% 16%;
+
+    --muted: 30 9% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 99%;
+
+    --border: 30 9% 90%;
+    --input: 30 9% 92%;
+    --ring: 12 100% 60%;
 
     --radius: 0.75rem;
 
-    /* Gradients for hero sections */
-    --gradient-hero: linear-gradient(135deg, hsl(25 64% 31%), hsl(25 56% 45%));
-    --gradient-craft: linear-gradient(180deg, hsl(33 42% 94%), hsl(33 42% 88%));
-    --gradient-accent: linear-gradient(135deg, hsl(30 100% 60%), hsl(25 56% 45%));
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+    --gradient-cta: linear-gradient(135deg, #A855F7 0%, #8B5CF6 100%);
+    --gradient-accent: linear-gradient(135deg, #10B981 0%, #34D399 100%);
 
     /* Shadows with warmth */
-    --shadow-warm: 0 10px 40px -10px hsl(25 64% 31% / 0.3);
-    --shadow-glow: 0 0 40px hsl(30 100% 60% / 0.2);
+    --shadow-warm: 0 10px 40px -10px hsl(12 100% 60% / 0.3);
+    --shadow-glow: 0 0 40px hsl(160 84% 39% / 0.2);
 
     /* Animations */
     --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);

@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { ShoppingBag, Loader2, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { BackButton } from '@/components/BackButton';
 
 export default function BuyerSignup() {
   const [formData, setFormData] = useState({
@@ -51,18 +52,19 @@ export default function BuyerSignup() {
     setIsLoading(true);
 
     try {
-      await signup(formData.email, formData.password, 'buyer', {
+      await signup({
+        email: formData.email,
+        password: formData.password,
         name: formData.name,
-        metadata: { onboardingCompleted: false },
-        preferences: { language: null, notifications: { email: true, push: true } }
+        role: 'buyer',
       });
 
       toast({
         title: 'Account created!',
-        description: 'Please check your email to verify your account.',
+        description: 'Welcome to CultureCart! You can now start exploring artisan crafts.',
       });
 
-      navigate('/auth/verify-email');
+      navigate('/onboarding');
     } catch (error) {
       toast({
         title: 'Signup failed',
@@ -95,6 +97,9 @@ export default function BuyerSignup() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md mx-4"
       >
+        <div className="mb-6">
+          <BackButton to="/choose-role" />
+        </div>
         <Card className="shadow-warm border-2">
           <CardHeader className="text-center">
             <div className="mx-auto w-12 h-12 bg-gradient-hero rounded-full flex items-center justify-center mb-4">
@@ -221,11 +226,7 @@ export default function BuyerSignup() {
               </p>
             </div>
 
-            <div className="mt-4 text-center">
-              <Link to="/auth/choose-role" className="text-sm text-muted-foreground hover:text-primary">
-                ← Back to role selection
-              </Link>
-            </div>
+
           </CardContent>
         </Card>
       </motion.div>

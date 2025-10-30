@@ -1,4 +1,15 @@
 import { create } from 'zustand';
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  User as FirebaseUser,
+  updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup
+} from 'firebase/auth';
+import { auth } from '@/config/firebase';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -27,6 +38,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   signup: (userData: SignupData) => Promise<void>;
   setUser: (user: User) => void;
@@ -56,33 +68,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   login: async (email: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
-      }
-
+      // Create user object from Firebase user
       const user: User = {
-        id: data.data.user.id,
-        userId: data.data.user.userId,
-        email: data.data.user.email,
-        name: data.data.user.metadata?.fullName || 'User',
-        role: data.data.user.roles[0] as UserRole,
-        onboardingCompleted: data.data.user.metadata?.onboardingCompleted || false,
-        preferences: data.data.user.preferences,
+        id: firebaseUser.uid,
+        userId: firebaseUser.uid,
+        email: firebaseUser.email || '',
+        name: firebaseUser.displayName || 'User',
+        role: 'buyer', // Default role, will be updated during onboarding
+        onboardingCompleted: false,
+        preferences: {
+          language: 'en',
+          notifications: {
+            email: true,
+            push: true,
+            sms: false,
+          },
+        },
       };
 
       set({ user, isAuthenticated: true, isLoading: false });
       localStorage.setItem('culturecart_user', JSON.stringify(user));
-      localStorage.setItem('culturecart_token', data.data.token);
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Login failed',
@@ -92,46 +100,77 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
+  loginWithGoogle: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+
+      const result = await signInWithPopup(auth, provider);
+      const firebaseUser = result.user;
+
+      // Create user object from Firebase user
+      const user: User = {
+        id: firebaseUser.uid,
+        userId: firebaseUser.uid,
+        email: firebaseUser.email || '',
+        name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+        role: 'buyer', // Default role, will be updated during onboarding
+        onboardingCompleted: false,
+        preferences: {
+          language: 'en',
+          notifications: {
+            email: true,
+            push: true,
+            sms: false,
+          },
+        },
+      };
+
+      set({ user, isAuthenticated: true, isLoading: false });
+      localStorage.setItem('culturecart_user', JSON.stringify(user));
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Google login failed',
+        isLoading: false
+      });
+      throw error;
+    }
+  },
+
   signup: async (userData: SignupData) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: userData.email,
-          password: userData.password,
-          roles: [userData.role],
-          metadata: {
-            fullName: userData.name,
-            phone: userData.phone,
-            location: userData.location,
-            craftType: userData.craftType,
-            experience: userData.experience,
-            portfolio: userData.portfolio,
-            onboardingCompleted: false,
-          },
-          preferences: {
-            language: 'en',
-            notifications: {
-              email: true,
-              push: true,
-              sms: false,
-            },
-          },
-        }),
+      const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
+      const firebaseUser = userCredential.user;
+
+      // Update display name
+      await updateProfile(firebaseUser, {
+        displayName: userData.name,
       });
 
-      const data = await response.json();
+      // Create user object
+      const user: User = {
+        id: firebaseUser.uid,
+        userId: firebaseUser.uid,
+        email: firebaseUser.email || '',
+        name: userData.name,
+        role: userData.role,
+        onboardingCompleted: false,
+        preferences: {
+          language: 'en',
+          notifications: {
+            email: true,
+            push: true,
+            sms: false,
+          },
+        },
+      };
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Signup failed');
-      }
-
-      // Auto-login after signup
-      await get().login(userData.email, userData.password);
+      set({ user, isAuthenticated: true, isLoading: false });
+      localStorage.setItem('culturecart_user', JSON.stringify(user));
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Signup failed',
@@ -144,18 +183,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: async () => {
     set({ isLoading: true });
     try {
-      await fetch(`${API_BASE_URL}/api/auth/logout`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('culturecart_token')}`,
-        },
-      });
+      await signOut(auth);
     } catch (error) {
-      console.warn('Logout API call failed:', error);
+      console.warn('Firebase logout failed:', error);
     }
     set({ user: null, isAuthenticated: false, isLoading: false });
     localStorage.removeItem('culturecart_user');
-    localStorage.removeItem('culturecart_token');
   },
 
   setUser: (user: User) => {
@@ -209,32 +242,41 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   initializeAuth: async () => {
     set({ isLoading: true });
     try {
-      // Check for stored user and token first
-      const storedUser = localStorage.getItem('culturecart_user');
-      const storedToken = localStorage.getItem('culturecart_token');
-
-      if (storedUser && storedToken) {
-        const user = JSON.parse(storedUser);
-
-        // Verify token is still valid
-        try {
-          const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
-            headers: {
-              'Authorization': `Bearer ${storedToken}`,
-            },
-          });
-
-          if (response.ok) {
+      // Listen to Firebase auth state changes
+      onAuthStateChanged(auth, (firebaseUser) => {
+        if (firebaseUser) {
+          // Check for stored user data
+          const storedUser = localStorage.getItem('culturecart_user');
+          if (storedUser) {
+            const user = JSON.parse(storedUser);
             set({ user, isAuthenticated: true, isLoading: false });
-            return;
+          } else {
+            // Create user object if not stored
+            const user: User = {
+              id: firebaseUser.uid,
+              userId: firebaseUser.uid,
+              email: firebaseUser.email || '',
+              name: firebaseUser.displayName || 'User',
+              role: 'buyer', // Default role
+              onboardingCompleted: false,
+              preferences: {
+                language: 'en',
+                notifications: {
+                  email: true,
+                  push: true,
+                  sms: false,
+                },
+              },
+            };
+            set({ user, isAuthenticated: true, isLoading: false });
+            localStorage.setItem('culturecart_user', JSON.stringify(user));
           }
-        } catch (error) {
-          console.warn('Token validation failed:', error);
+        } else {
+          // User is signed out
+          set({ user: null, isAuthenticated: false, isLoading: false });
+          localStorage.removeItem('culturecart_user');
         }
-      }
-
-      // No valid session, stay logged out
-      set({ isLoading: false });
+      });
     } catch (error) {
       console.error('Error initializing auth:', error);
       set({ isLoading: false });

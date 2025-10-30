@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, Loader2, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { BackButton } from '@/components/BackButton';
 
 export default function VerifyEmail() {
   const [otp, setOtp] = useState('');
@@ -168,6 +169,9 @@ export default function VerifyEmail() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md mx-4"
       >
+        <div className="mb-6">
+          <BackButton to="/login" />
+        </div>
         <Card className="shadow-warm border-2">
           <CardHeader className="text-center">
             <div className="mx-auto w-12 h-12 bg-gradient-hero rounded-full flex items-center justify-center mb-4">
@@ -255,14 +259,7 @@ export default function VerifyEmail() {
                 </Button>
               </div>
 
-              <div className="text-center">
-                <Link
-                  to="/login"
-                  className="text-sm text-muted-foreground hover:text-primary"
-                >
-                  Back to sign in
-                </Link>
-              </div>
+
             </div>
           </CardContent>
         </Card>

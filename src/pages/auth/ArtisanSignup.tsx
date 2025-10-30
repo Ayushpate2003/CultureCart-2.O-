@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Palette, Loader2, Eye, EyeOff, MapPin, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { BackButton } from '@/components/BackButton';
 
 const craftCategories = [
   'Pottery & Ceramics',
@@ -94,24 +95,23 @@ export default function ArtisanSignup() {
     setIsLoading(true);
 
     try {
-      await signup(formData.email, formData.password, 'artisan', {
+      await signup({
+        email: formData.email,
+        password: formData.password,
         name: formData.name,
-        businessName: formData.businessName,
-        craftSpecialty: formData.craftCategory,
-        location: { city: formData.location, state: '', country: 'India' },
-        verificationStatus: 'pending',
-        experience: formData.experience,
-        description: formData.description,
-        metadata: { onboardingCompleted: false },
-        preferences: { language: null, notifications: { email: true, push: true } }
+        role: 'artisan',
+        craftType: formData.craftCategory,
+        experience: parseInt(formData.experience.split(' ')[0]) || 0,
+        location: formData.location,
+        portfolio: formData.description,
       });
 
       toast({
         title: 'Account created!',
-        description: 'Your artisan account is being reviewed. We\'ll notify you once approved.',
+        description: 'Welcome to CultureCart! Your artisan profile is now active.',
       });
 
-      navigate('/auth/verify-email');
+      navigate('/onboarding');
     } catch (error) {
       toast({
         title: 'Signup failed',
@@ -407,6 +407,9 @@ export default function ArtisanSignup() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md mx-4"
       >
+        <div className="mb-6">
+          <BackButton to="/choose-role" />
+        </div>
         <Card className="shadow-warm border-2">
           <CardHeader className="text-center">
             <div className="mx-auto w-12 h-12 bg-gradient-hero rounded-full flex items-center justify-center mb-4">
@@ -442,11 +445,7 @@ export default function ArtisanSignup() {
               </p>
             </div>
 
-            <div className="mt-4 text-center">
-              <Link to="/auth/choose-role" className="text-sm text-muted-foreground hover:text-primary">
-                ← Back to role selection
-              </Link>
-            </div>
+
           </CardContent>
         </Card>
       </motion.div>

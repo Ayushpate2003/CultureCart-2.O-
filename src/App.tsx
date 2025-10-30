@@ -4,42 +4,45 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import ChooseRole from "./pages/auth/ChooseRole";
-import BuyerSignup from "./pages/auth/BuyerSignup";
-import ArtisanSignup from "./pages/auth/ArtisanSignup";
-import ForgotPassword from "./pages/auth/ForgotPassword";
-import VerifyEmail from "./pages/auth/VerifyEmail";
-import Terms from "./pages/auth/Terms";
-import Privacy from "./pages/auth/Privacy";
-import SignUpForm from "./components/auth/SignUpForm";
-import Explore from "./pages/Explore";
-import ProductDetail from "./pages/ProductDetail";
-import About from "./pages/About";
-import LocationLanguage from "./pages/onboarding/LocationLanguage";
-import AdminDashboard from "./pages/dashboard/AdminDashboard";
-import AllUsers from "./pages/admin/AllUsers";
-import AllProducts from "./pages/admin/AllProducts";
-import AllArtisans from "./pages/admin/AllArtisans";
-import AllOrders from "./pages/admin/AllOrders";
-import AdminAnalytics from "./pages/admin/Analytics";
-import ArtisanDashboard from "./pages/dashboard/ArtisanDashboard";
-import BuyerDashboard from "./pages/dashboard/BuyerDashboard";
-import UploadCraft from "./pages/artisan/UploadCraft";
-import MyProducts from "./pages/artisan/MyProducts";
-import Orders from "./pages/artisan/Orders";
-import ProfileSettings from "./pages/artisan/ProfileSettings";
-import Analytics from "./pages/artisan/Analytics";
-import Earnings from "./pages/artisan/Earnings";
-import Messages from "./pages/artisan/Messages";
-import HelpCenter from "./pages/artisan/HelpCenter";
-import BuyerAnalytics from "./pages/buyer/Analytics";
-import BuyerEarnings from "./pages/buyer/Earnings";
-import BuyerMessages from "./pages/buyer/Messages";
-import AIStudio from "./pages/buyer/AIStudio";
-import BuyerHelpCenter from "./pages/buyer/HelpCenter";
-import NotFound from "./pages/NotFound";
+import { lazy, Suspense } from "react";
+
+// Lazy load components for code splitting
+const Home = lazy(() => import("./pages/Home"));
+const Login = lazy(() => import("./pages/Login"));
+const ChooseRole = lazy(() => import("./pages/auth/ChooseRole"));
+const BuyerSignup = lazy(() => import("./pages/auth/BuyerSignup"));
+const ArtisanSignup = lazy(() => import("./pages/auth/ArtisanSignup"));
+const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
+const VerifyEmail = lazy(() => import("./pages/auth/VerifyEmail"));
+const Terms = lazy(() => import("./pages/auth/Terms"));
+const Privacy = lazy(() => import("./pages/auth/Privacy"));
+const SignUpForm = lazy(() => import("./components/auth/SignUpForm"));
+const Explore = lazy(() => import("./pages/Explore"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const About = lazy(() => import("./pages/About"));
+const LocationLanguage = lazy(() => import("./pages/onboarding/LocationLanguage"));
+const AdminDashboard = lazy(() => import("./pages/dashboard/AdminDashboard"));
+const AllUsers = lazy(() => import("./pages/admin/AllUsers"));
+const AllProducts = lazy(() => import("./pages/admin/AllProducts"));
+const AllArtisans = lazy(() => import("./pages/admin/AllArtisans"));
+const AllOrders = lazy(() => import("./pages/admin/AllOrders"));
+const AdminAnalytics = lazy(() => import("./pages/admin/Analytics"));
+const ArtisanDashboard = lazy(() => import("./pages/dashboard/ArtisanDashboard"));
+const BuyerDashboard = lazy(() => import("./pages/dashboard/BuyerDashboard"));
+const UploadCraft = lazy(() => import("./pages/artisan/UploadCraft"));
+const MyProducts = lazy(() => import("./pages/artisan/MyProducts"));
+const Orders = lazy(() => import("./pages/artisan/Orders"));
+const ProfileSettings = lazy(() => import("./pages/artisan/ProfileSettings"));
+const Analytics = lazy(() => import("./pages/artisan/Analytics"));
+const Earnings = lazy(() => import("./pages/artisan/Earnings"));
+const Messages = lazy(() => import("./pages/artisan/Messages"));
+const HelpCenter = lazy(() => import("./pages/artisan/HelpCenter"));
+const BuyerAnalytics = lazy(() => import("./pages/buyer/Analytics"));
+const BuyerEarnings = lazy(() => import("./pages/buyer/Earnings"));
+const BuyerMessages = lazy(() => import("./pages/buyer/Messages"));
+const AIStudio = lazy(() => import("./pages/buyer/AIStudio"));
+const BuyerHelpCenter = lazy(() => import("./pages/buyer/HelpCenter"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
@@ -49,7 +52,12 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
+        <Suspense fallback={
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
+          </div>
+        }>
+          <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/choose-role" element={<ChooseRole />} />
@@ -203,7 +211,8 @@ const App = () => (
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
-        </Routes>
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

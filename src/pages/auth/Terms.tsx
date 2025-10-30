@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { BackButton } from '@/components/BackButton';
 
 export default function Terms() {
   return (
@@ -17,13 +18,9 @@ export default function Terms() {
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="mb-6">
-            <Link
-              to="/auth/choose-role"
-              className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-4"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to sign up
-            </Link>
+            <div className="mb-4">
+              <BackButton to="/choose-role" />
+            </div>
             <h1 className="text-4xl font-bold mb-2">Terms of Service</h1>
             <p className="text-muted-foreground">Last updated: December 2024</p>
           </div>
@@ -141,14 +138,7 @@ export default function Terms() {
             </CardContent>
           </Card>
 
-          <div className="mt-8 text-center">
-            <Link to="/auth/choose-role">
-              <Button variant="outline">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Sign Up
-              </Button>
-            </Link>
-          </div>
+
         </motion.div>
       </div>
 

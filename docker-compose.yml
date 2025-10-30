@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: culturecart_user
       POSTGRES_PASSWORD: culturecart_password
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -23,7 +23,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@admin.com
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
-      - "5050:80"
+      - "5051:80"
     depends_on:
       - postgres
     networks:
@@ -39,7 +39,7 @@ services:
       JWT_SECRET: your-super-secret-jwt-key-change-in-production
       UPLOAD_PATH: /app/uploads
     ports:
-      - "3001:3001"
+      - "3002:3001"
     volumes:
       - ./culturecart-backend:/app
       - uploads_data:/app/uploads

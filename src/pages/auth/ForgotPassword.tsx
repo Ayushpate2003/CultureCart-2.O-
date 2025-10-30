@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { Mail, Loader2, ArrowLeft, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { BackButton } from '@/components/BackButton';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -84,6 +85,9 @@ export default function ForgotPassword() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md mx-4"
       >
+        <div className="mb-6">
+          <BackButton to="/login" />
+        </div>
         <Card className="shadow-warm border-2">
           <CardHeader className="text-center">
             <div className="mx-auto w-12 h-12 bg-gradient-hero rounded-full flex items-center justify-center mb-4">
@@ -167,15 +171,7 @@ export default function ForgotPassword() {
               </div>
             )}
 
-            <div className="mt-6 text-center">
-              <Link
-                to="/login"
-                className="inline-flex items-center text-sm text-muted-foreground hover:text-primary"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to sign in
-              </Link>
-            </div>
+
           </CardContent>
         </Card>
 

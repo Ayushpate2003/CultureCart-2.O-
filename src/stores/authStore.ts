@@ -1,34 +1,47 @@
 import { create } from 'zustand';
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  User as FirebaseUser,
-  updateProfile,
-  GoogleAuthProvider,
-  signInWithPopup
-} from 'firebase/auth';
+import { onAuthStateChanged, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '@/config/firebase';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import { FirebaseAuthService, CreateUserData } from '@/services/api';
 
 export type UserRole = 'admin' | 'artisan' | 'buyer';
 
-interface User {
+export interface User {
   id: string;
-  userId: string;
   email: string;
   name: string;
   role: UserRole;
+  createdAt: string;
+  lastLoginAt: string;
+  profileComplete: boolean;
   onboardingCompleted?: boolean;
+  metadata?: {
+    craftType?: string;
+    experience?: number;
+    location?: string;
+    portfolio?: string;
+  };
   preferences?: {
     language?: string;
-    notifications?: {
-      email: boolean;
-      push: boolean;
-      sms: boolean;
+    location?: {
+      latitude: number;
+      longitude: number;
+      state?: string;
+      city?: string;
+      country?: string;
     };
+  };
+}
+
+interface SignupData {
+  email: string;
+  password: string;
+  name: string;
+  role: UserRole;
+  metadata?: {
+    craftType?: string;
+    experience?: number;
+    location?: string;
+    portfolio?: string;
   };
 }
 
@@ -38,26 +51,16 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
+  signup: (data: SignupData) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
-  signup: (userData: SignupData) => Promise<void>;
-  setUser: (user: User) => void;
-  updateUser: (updates: Partial<User>) => void;
+  setUser: (user: User | null) => void;
+  updateUser: (updates: Partial<User>) => Promise<void>;
   clearError: () => void;
-  initializeAuth: () => Promise<void>;
+  initializeAuth: () => void;
 }
 
-interface SignupData {
-  email: string;
-  password: string;
-  name: string;
-  role: UserRole;
-  phone?: string;
-  location?: string;
-  craftType?: string;
-  experience?: number;
-  portfolio?: string;
-}
+const googleProvider = new GoogleAuthProvider();
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
@@ -68,29 +71,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   login: async (email: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const firebaseUser = userCredential.user;
-
-      // Create user object from Firebase user
-      const user: User = {
-        id: firebaseUser.uid,
-        userId: firebaseUser.uid,
-        email: firebaseUser.email || '',
-        name: firebaseUser.displayName || 'User',
-        role: 'buyer', // Default role, will be updated during onboarding
-        onboardingCompleted: false,
-        preferences: {
-          language: 'en',
-          notifications: {
-            email: true,
-            push: true,
-            sms: false,
-          },
-        },
-      };
-
-      set({ user, isAuthenticated: true, isLoading: false });
-      localStorage.setItem('culturecart_user', JSON.stringify(user));
+      const userData = await FirebaseAuthService.signInWithEmail(email, password);
+      set({ user: userData, isAuthenticated: true, isLoading: false });
+      localStorage.setItem('culturecart_user', JSON.stringify(userData));
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Login failed',
@@ -100,77 +83,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  loginWithGoogle: async () => {
+  signup: async (data: SignupData) => {
     set({ isLoading: true, error: null });
     try {
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({
-        prompt: 'select_account'
-      });
-
-      const result = await signInWithPopup(auth, provider);
-      const firebaseUser = result.user;
-
-      // Create user object from Firebase user
-      const user: User = {
-        id: firebaseUser.uid,
-        userId: firebaseUser.uid,
-        email: firebaseUser.email || '',
-        name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
-        role: 'buyer', // Default role, will be updated during onboarding
-        onboardingCompleted: false,
-        preferences: {
-          language: 'en',
-          notifications: {
-            email: true,
-            push: true,
-            sms: false,
-          },
-        },
-      };
-
-      set({ user, isAuthenticated: true, isLoading: false });
-      localStorage.setItem('culturecart_user', JSON.stringify(user));
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : 'Google login failed',
-        isLoading: false
-      });
-      throw error;
-    }
-  },
-
-  signup: async (userData: SignupData) => {
-    set({ isLoading: true, error: null });
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
-      const firebaseUser = userCredential.user;
-
-      // Update display name
-      await updateProfile(firebaseUser, {
-        displayName: userData.name,
-      });
-
-      // Create user object
-      const user: User = {
-        id: firebaseUser.uid,
-        userId: firebaseUser.uid,
-        email: firebaseUser.email || '',
-        name: userData.name,
-        role: userData.role,
-        onboardingCompleted: false,
-        preferences: {
-          language: 'en',
-          notifications: {
-            email: true,
-            push: true,
-            sms: false,
-          },
-        },
-      };
-
-      set({ user, isAuthenticated: true, isLoading: false });
-      localStorage.setItem('culturecart_user', JSON.stringify(user));
+      const userData = await FirebaseAuthService.createUser(data as CreateUserData);
+      set({ user: userData, isAuthenticated: true, isLoading: false });
+      localStorage.setItem('culturecart_user', JSON.stringify(userData));
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Signup failed',
@@ -180,10 +98,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
+  loginWithGoogle: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const userData = await FirebaseAuthService.signInWithGoogle();
+      set({ user: userData, isAuthenticated: true, isLoading: false });
+      localStorage.setItem('culturecart_user', JSON.stringify(userData));
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Google login failed',
+        isLoading: false
+      });
+      throw error;
+    }
+  },
+
   logout: async () => {
     set({ isLoading: true });
     try {
-      await signOut(auth);
+      await FirebaseAuthService.signOut();
     } catch (error) {
       console.warn('Firebase logout failed:', error);
     }
@@ -191,8 +124,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     localStorage.removeItem('culturecart_user');
   },
 
-  setUser: (user: User) => {
-    set({ user, isAuthenticated: true });
+  setUser: (user: User | null) => {
+    set({ user, isAuthenticated: !!user });
   },
 
   updateUser: async (updates: Partial<User>) => {
@@ -201,34 +134,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
     try {
       const updatedUser = { ...currentUser, ...updates };
+      await FirebaseAuthService.updateUserData(currentUser.id, updates);
       set({ user: updatedUser });
-
-      // Update user preferences/metadata via API
-      const updateData: any = {};
-      if (updates.preferences) {
-        updateData.preferences = updates.preferences;
-      }
-      if (updates.onboardingCompleted !== undefined) {
-        updateData.metadata = {
-          onboardingCompleted: updates.onboardingCompleted,
-        };
-      }
-
-      if (Object.keys(updateData).length > 0) {
-        const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('culturecart_token')}`,
-          },
-          body: JSON.stringify(updateData),
-        });
-
-        if (!response.ok) {
-          console.warn('Failed to update user via API');
-        }
-      }
-
       localStorage.setItem('culturecart_user', JSON.stringify(updatedUser));
     } catch (error) {
       console.error('Error updating user:', error);
@@ -239,47 +146,45 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ error: null });
   },
 
-  initializeAuth: async () => {
-    set({ isLoading: true });
+  initializeAuth: () => {
     try {
-      // Listen to Firebase auth state changes
-      onAuthStateChanged(auth, (firebaseUser) => {
-        if (firebaseUser) {
-          // Check for stored user data
-          const storedUser = localStorage.getItem('culturecart_user');
-          if (storedUser) {
-            const user = JSON.parse(storedUser);
-            set({ user, isAuthenticated: true, isLoading: false });
-          } else {
-            // Create user object if not stored
-            const user: User = {
-              id: firebaseUser.uid,
-              userId: firebaseUser.uid,
-              email: firebaseUser.email || '',
-              name: firebaseUser.displayName || 'User',
-              role: 'buyer', // Default role
-              onboardingCompleted: false,
-              preferences: {
-                language: 'en',
-                notifications: {
-                  email: true,
-                  push: true,
-                  sms: false,
-                },
-              },
-            };
-            set({ user, isAuthenticated: true, isLoading: false });
-            localStorage.setItem('culturecart_user', JSON.stringify(user));
+      set({ isLoading: true });
+      
+      // Check for Google Sign-In redirect result first
+      FirebaseAuthService.handleGoogleRedirectResult()
+        .then((userData) => {
+          if (userData) {
+            set({ user: userData, isAuthenticated: true, isLoading: false });
+            localStorage.setItem('culturecart_user', JSON.stringify(userData));
+            return;
           }
-        } else {
-          // User is signed out
+        })
+        .catch((error) => {
+          console.error('Error handling redirect result:', error);
+        });
+      
+      onAuthStateChanged(auth, async (firebaseUser) => {
+        try {
+          if (firebaseUser) {
+            const userData = await FirebaseAuthService.getUserData(firebaseUser.uid);
+            if (userData) {
+              set({ user: userData, isAuthenticated: true, isLoading: false });
+              localStorage.setItem('culturecart_user', JSON.stringify(userData));
+            } else {
+              set({ user: null, isAuthenticated: false, isLoading: false });
+            }
+          } else {
+            set({ user: null, isAuthenticated: false, isLoading: false });
+            localStorage.removeItem('culturecart_user');
+          }
+        } catch (error) {
+          console.error('Error in auth state change:', error);
           set({ user: null, isAuthenticated: false, isLoading: false });
-          localStorage.removeItem('culturecart_user');
         }
       });
     } catch (error) {
       console.error('Error initializing auth:', error);
-      set({ isLoading: false });
+      set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
 }));

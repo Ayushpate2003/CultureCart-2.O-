@@ -1,30 +1,27 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Users, ShoppingBag, Shield, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { BackButton } from '@/components/BackButton';
 
 const ChooseRole: React.FC = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
 
   const roles = [
     {
       id: 'buyer',
-      title: t('auth.buyer'),
-      description: t('auth.buyerDescription'),
+      title: 'Buyer',
+      description: 'Discover and purchase authentic Indian crafts from talented artisans',
       icon: ShoppingBag,
       color: 'bg-blue-500',
       benefits: ['Discover authentic crafts', 'Support local artisans', 'Secure payments', 'Fast delivery'],
     },
     {
       id: 'artisan',
-      title: t('auth.artisan'),
-      description: t('auth.artisanDescription'),
+      title: 'Artisan',
+      description: 'Showcase your crafts and connect with customers worldwide',
       icon: Users,
       color: 'bg-green-500',
       benefits: ['Showcase your work', 'Direct customer connection', 'Fair pricing', 'Global reach'],
@@ -42,7 +39,22 @@ const ChooseRole: React.FC = () => {
   const handleRoleSelect = (roleId: string) => {
     // Store selected role temporarily
     sessionStorage.setItem('selectedRole', roleId);
-    navigate('/signup');
+    
+    // Navigate to role-specific signup page
+    switch (roleId) {
+      case 'buyer':
+        navigate('/auth/buyer-signup');
+        break;
+      case 'artisan':
+        navigate('/auth/artisan-signup');
+        break;
+      case 'admin':
+        // Temporarily disabled - AdminSignup page not created yet
+        alert('Admin signup coming soon!');
+        break;
+      default:
+        navigate('/signup');
+    }
   };
 
   return (
@@ -53,9 +65,6 @@ const ChooseRole: React.FC = () => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-4xl"
       >
-        <div className="mb-6">
-          <BackButton to="/" />
-        </div>
         <div className="text-center mb-8">
           <motion.h1
             initial={{ opacity: 0, y: -20 }}
@@ -63,7 +72,7 @@ const ChooseRole: React.FC = () => {
             transition={{ delay: 0.2, duration: 0.6 }}
             className="text-4xl font-bold text-gray-900 mb-4"
           >
-            {t('auth.chooseRole')}
+Choose Your Role
           </motion.h1>
           <motion.p
             initial={{ opacity: 0 }}

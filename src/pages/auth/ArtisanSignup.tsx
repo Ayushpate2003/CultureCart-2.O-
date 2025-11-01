@@ -13,7 +13,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Palette, Loader2, Eye, EyeOff, MapPin, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { BackButton } from '@/components/BackButton';
 
 const craftCategories = [
   'Pottery & Ceramics',
@@ -95,15 +94,25 @@ export default function ArtisanSignup() {
     setIsLoading(true);
 
     try {
+      console.log('Attempting artisan signup with data:', {
+        email: formData.email,
+        name: formData.name,
+        role: 'artisan',
+        craftType: formData.craftCategory,
+        location: formData.location
+      });
+      
       await signup({
         email: formData.email,
         password: formData.password,
         name: formData.name,
         role: 'artisan',
-        craftType: formData.craftCategory,
-        experience: parseInt(formData.experience.split(' ')[0]) || 0,
-        location: formData.location,
-        portfolio: formData.description,
+        metadata: {
+          craftType: formData.craftCategory,
+          experience: parseInt(formData.experience.split(' ')[0]) || 0,
+          location: formData.location,
+          portfolio: formData.description,
+        },
       });
 
       toast({
@@ -112,10 +121,11 @@ export default function ArtisanSignup() {
       });
 
       navigate('/onboarding');
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Artisan signup error:', error);
       toast({
         title: 'Signup failed',
-        description: 'Something went wrong. Please try again.',
+        description: error?.message || 'Something went wrong. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -369,7 +379,7 @@ export default function ArtisanSignup() {
         </Button>
         <Button
           onClick={handleSubmit}
-          className="flex-1 bg-gradient-hero"
+          className="flex-1 bg-green-500 hover:bg-green-600 text-white"
           disabled={isLoading || !formData.agreeToTerms}
         >
           {isLoading ? (
@@ -407,9 +417,6 @@ export default function ArtisanSignup() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md mx-4"
       >
-        <div className="mb-6">
-          <BackButton to="/choose-role" />
-        </div>
         <Card className="shadow-warm border-2">
           <CardHeader className="text-center">
             <div className="mx-auto w-12 h-12 bg-gradient-hero rounded-full flex items-center justify-center mb-4">

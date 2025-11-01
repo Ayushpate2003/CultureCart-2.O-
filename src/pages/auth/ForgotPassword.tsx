@@ -9,6 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Mail, Loader2, ArrowLeft, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { BackButton } from '@/components/BackButton';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { auth } from '@/config/firebase';
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -22,11 +24,7 @@ export default function ForgotPassword() {
     setIsLoading(true);
 
     try {
-      // TODO: Implement password reset with Appwrite
-      // await account.createRecovery(email, `${window.location.origin}/auth/reset-password`);
-
-      // For now, simulate success
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await sendPasswordResetEmail(auth, email);
 
       setIsSent(true);
       toast({
@@ -47,7 +45,7 @@ export default function ForgotPassword() {
   const handleResend = async () => {
     setIsLoading(true);
     try {
-      // TODO: Implement resend with Appwrite
+      await sendPasswordResetEmail(auth, email);
       await new Promise(resolve => setTimeout(resolve, 1000));
       toast({
         title: 'Email resent!',

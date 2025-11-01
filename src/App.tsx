@@ -4,7 +4,58 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, Component, ErrorInfo, ReactNode } from "react";
+import { useAuthStore } from "./stores/authStore";
+
+// Error Boundary Component
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error?: Error;
+}
+
+class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('App Error Boundary caught an error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center p-8">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Something went wrong</h1>
+            <p className="text-gray-600 mb-4">We're sorry, but something unexpected happened.</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Reload Page
+            </button>
+            {process.env.NODE_ENV === 'development' && (
+              <details className="mt-4 text-left">
+                <summary className="cursor-pointer text-sm text-gray-500">Error Details</summary>
+                <pre className="mt-2 text-xs text-red-600 whitespace-pre-wrap">
+                  {this.state.error?.stack}
+                </pre>
+              </details>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 // Lazy load components for code splitting
 const Home = lazy(() => import("./pages/Home"));
@@ -12,6 +63,7 @@ const Login = lazy(() => import("./pages/Login"));
 const ChooseRole = lazy(() => import("./pages/auth/ChooseRole"));
 const BuyerSignup = lazy(() => import("./pages/auth/BuyerSignup"));
 const ArtisanSignup = lazy(() => import("./pages/auth/ArtisanSignup"));
+// const AdminSignup = lazy(() => import("./pages/auth/AdminSignup"));
 const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
 const VerifyEmail = lazy(() => import("./pages/auth/VerifyEmail"));
 const Terms = lazy(() => import("./pages/auth/Terms"));
@@ -46,12 +98,28 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
+const AuthInitializer = ({ children }: { children: React.ReactNode }) => {
+  const initializeAuth = useAuthStore(state => state.initializeAuth);
+  
+  useEffect(() => {
+    try {
+      initializeAuth();
+    } catch (error) {
+      console.error('Failed to initialize auth:', error);
+    }
+  }, [initializeAuth]);
+  
+  return <>{children}</>;
+};
+
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <AuthInitializer>
+          <BrowserRouter>
         <Suspense fallback={
           <div className="min-h-screen flex items-center justify-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
@@ -63,6 +131,7 @@ const App = () => (
           <Route path="/choose-role" element={<ChooseRole />} />
           <Route path="/auth/buyer-signup" element={<BuyerSignup />} />
           <Route path="/auth/artisan-signup" element={<ArtisanSignup />} />
+          {/* <Route path="/auth/admin-signup" element={<AdminSignup />} /> */}
           <Route path="/auth/forgot-password" element={<ForgotPassword />} />
           <Route path="/auth/verify-email" element={<VerifyEmail />} />
           <Route path="/terms" element={<Terms />} />
@@ -213,9 +282,11 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+          </BrowserRouter>
+        </AuthInitializer>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

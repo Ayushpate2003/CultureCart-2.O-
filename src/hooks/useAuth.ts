@@ -8,17 +8,17 @@ export const useAuth = () => {
     isLoading,
     error,
     login,
+    signup,
     loginWithGoogle,
     logout,
-    signup,
-    setUser,
     updateUser,
+    setUser,
     clearError,
     initializeAuth,
   } = useAuthStore();
 
   useEffect(() => {
-    // Initialize auth on mount
+    // Initialize auth state when hook is first used
     initializeAuth();
   }, [initializeAuth]);
 
@@ -28,10 +28,11 @@ export const useAuth = () => {
     isLoading,
     error,
     login,
+    signup,
     loginWithGoogle,
     logout,
-    signup,
     updateUser,
+    setUser,
     clearError,
   };
 };

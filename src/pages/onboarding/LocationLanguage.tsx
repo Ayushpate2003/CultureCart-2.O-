@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next'; // Disabled - i18n not configured
 import { motion } from 'framer-motion';
 import { MapPin, Languages, Loader2, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,20 @@ import { reverseGeocode, getCurrentLocation, getLanguageName, getStateLanguages 
 
 const LocationLanguage: React.FC = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  // const { t } = useTranslation(); // Disabled - i18n not configured
+  const t = (key: string, options?: any) => {
+    // Fallback translations
+    const translations: Record<string, string> = {
+      'onboarding.welcome': 'onboarding.welcome',
+      'onboarding.locationPermission': 'Location Permission',
+      'onboarding.detectingLanguage': 'onboarding.languageDetected',
+      'onboarding.chooseLanguage': 'onboarding.chooseLanguage',
+      'onboarding.skipLocation': 'Skip Location',
+      'onboarding.setupComplete': 'onboarding.setupComplete',
+      'onboarding.languageDetected': 'onboarding.languageDetected'
+    };
+    return translations[key] || key;
+  };
   const {
     currentStep,
     totalSteps,
@@ -81,6 +94,10 @@ const LocationLanguage: React.FC = () => {
 
   // Complete Onboarding
   const handleComplete = async () => {
+    console.log('Onboarding completion started');
+    console.log('Selected language:', selectedLanguage);
+    console.log('Current user:', user);
+    
     if (!selectedLanguage) {
       setLanguageError('Please select a language to continue');
       return;
@@ -88,15 +105,20 @@ const LocationLanguage: React.FC = () => {
 
     setIsCompleting(true);
     try {
+      console.log('Calling completeOnboarding...');
       await completeOnboarding();
+      console.log('Onboarding completed successfully');
+      
       // Navigate to role-specific dashboard
-      const dashboardPath = user?.role === 'admin' ? '/admin/users' :
+      const dashboardPath = user?.role === 'admin' ? '/dashboard/admin' :
                            user?.role === 'artisan' ? '/dashboard/artisan' :
                            '/dashboard/buyer';
+      
+      console.log('Navigating to:', dashboardPath);
       navigate(dashboardPath);
     } catch (error) {
       console.error('Onboarding completion failed:', error);
-      setLanguageError('Failed to complete setup. Please try again.');
+      setLanguageError(`Failed to complete setup: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`);
     } finally {
       setIsCompleting(false);
     }

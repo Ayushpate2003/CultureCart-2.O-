@@ -1,9 +1,228 @@
 /**
  * CultureCart API Services
- * High-level API functions for frontend integration with PostgreSQL backend
+ * High-level API functions for frontend integration with Firebase and PostgreSQL backend
  */
 
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  updateProfile,
+  sendPasswordResetEmail,
+  User as FirebaseUser,
+} from 'firebase/auth';
+import {
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  serverTimestamp,
+} from 'firebase/firestore';
+import { auth, db } from '@/config/firebase';
+import { User, UserRole } from '@/stores/authStore';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+// ==========================================
+// FIREBASE AUTHENTICATION SERVICE
+// ==========================================
+
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
+// Add required scopes
+googleProvider.addScope('email');
+googleProvider.addScope('profile');
+
+export interface CreateUserData {
+  email: string;
+  password: string;
+  name: string;
+  role: UserRole;
+  metadata?: {
+    craftType?: string;
+    experience?: number;
+    location?: string;
+    portfolio?: string;
+    businessName?: string;
+    description?: string;
+  };
+}
+
+export class FirebaseAuthService {
+  static async createUser(userData: CreateUserData): Promise<User> {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        userData.email,
+        userData.password
+      );
+      const firebaseUser = userCredential.user;
+
+      await updateProfile(firebaseUser, {
+        displayName: userData.name,
+      });
+
+      const userDoc: User = {
+        id: firebaseUser.uid,
+        email: firebaseUser.email || '',
+        name: userData.name,
+        role: userData.role,
+        createdAt: new Date().toISOString(),
+        lastLoginAt: new Date().toISOString(),
+        profileComplete: true,
+        onboardingCompleted: false, // Set to false initially for proper onboarding flow
+        ...(userData.metadata && { metadata: userData.metadata }), // Only include metadata if it exists
+      };
+
+      // Filter out undefined values before saving to Firebase
+      const cleanUserDoc = Object.fromEntries(
+        Object.entries({
+          ...userDoc,
+          createdAt: serverTimestamp(),
+          lastLoginAt: serverTimestamp(),
+        }).filter(([_, value]) => value !== undefined)
+      );
+
+      await setDoc(doc(db, 'users', firebaseUser.uid), cleanUserDoc);
+
+      return userDoc;
+    } catch (error) {
+      console.error('Firebase createUser error:', error);
+      throw error;
+    }
+  }
+
+  static async signInWithEmail(email: string, password: string): Promise<User> {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
+
+      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data() as User;
+        await updateDoc(doc(db, 'users', firebaseUser.uid), {
+          lastLoginAt: serverTimestamp(),
+        });
+        return { ...userData, lastLoginAt: new Date().toISOString() };
+      } else {
+        const userData: User = {
+          id: firebaseUser.uid,
+          email: firebaseUser.email || '',
+          name: firebaseUser.displayName || 'User',
+          role: 'buyer',
+          createdAt: new Date().toISOString(),
+          lastLoginAt: new Date().toISOString(),
+          profileComplete: false,
+          onboardingCompleted: false,
+        };
+        
+        await setDoc(doc(db, 'users', firebaseUser.uid), {
+          ...userData,
+          createdAt: serverTimestamp(),
+          lastLoginAt: serverTimestamp(),
+        });
+        
+        return userData;
+      }
+    } catch (error) {
+      console.error('Firebase signIn error:', error);
+      throw error;
+    }
+  }
+
+  static async signInWithGoogle(): Promise<User> {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const firebaseUser = result.user;
+
+      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data() as User;
+        await updateDoc(doc(db, 'users', firebaseUser.uid), {
+          lastLoginAt: serverTimestamp(),
+        });
+        return { ...userData, lastLoginAt: new Date().toISOString() };
+      } else {
+        const userData: User = {
+          id: firebaseUser.uid,
+          email: firebaseUser.email || '',
+          name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+          role: 'buyer',
+          createdAt: new Date().toISOString(),
+          lastLoginAt: new Date().toISOString(),
+          profileComplete: false,
+          onboardingCompleted: false,
+        };
+        
+        await setDoc(doc(db, 'users', firebaseUser.uid), {
+          ...userData,
+          createdAt: serverTimestamp(),
+          lastLoginAt: serverTimestamp(),
+        });
+        
+        return userData;
+      }
+    } catch (error: any) {
+      console.error('Firebase Google signIn error:', error);
+      
+      // Handle specific Google Sign-In errors
+      if (error.code === 'auth/popup-closed-by-user') {
+        throw new Error('Sign-in was cancelled. Please try again.');
+      } else if (error.code === 'auth/popup-blocked') {
+        throw new Error('Pop-up was blocked by your browser. Please allow pop-ups and try again.');
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        throw new Error('Another sign-in attempt is already in progress.');
+      } else if (error.code === 'auth/unauthorized-domain') {
+        throw new Error('This domain is not authorized for Google Sign-In. Please contact support.');
+      } else if (error.code === 'auth/operation-not-allowed') {
+        throw new Error('Google Sign-In is not enabled. Please contact support.');
+      } else {
+        throw new Error(error.message || 'Google Sign-In failed. Please try again.');
+      }
+    }
+  }
+
+  static async signOut(): Promise<void> {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Firebase signOut error:', error);
+      throw error;
+    }
+  }
+
+  static async getUserData(uid: string): Promise<User | null> {
+    try {
+      const userDoc = await getDoc(doc(db, 'users', uid));
+      return userDoc.exists() ? (userDoc.data() as User) : null;
+    } catch (error) {
+      console.error('Firebase getUserData error:', error);
+      return null;
+    }
+  }
+
+  static async updateUserData(uid: string, updates: Partial<User>): Promise<void> {
+    try {
+      await updateDoc(doc(db, 'users', uid), {
+        ...updates,
+        lastLoginAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error('Firebase updateUserData error:', error);
+      throw error;
+    }
+  }
+}
 
 // ==========================================
 // HTTP CLIENT UTILITIES

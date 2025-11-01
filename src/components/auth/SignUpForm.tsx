@@ -91,15 +91,20 @@ const SignUpForm: React.FC<SignUpFormProps> = ({ selectedRole }) => {
         password: data.password,
         name: data.fullName,
         role: currentRole,
-        phone: data.phone,
-        location: data.location,
-        craftType: data.craftType,
-        experience: data.experience,
-        portfolio: data.portfolio || undefined,
+        metadata: {
+          craftType: data.craftType,
+          experience: data.experience,
+          location: data.location,
+          portfolio: data.portfolio || undefined,
+        },
       });
 
       // Redirect to onboarding or dashboard
-      navigate('/onboarding');
+      if (currentRole) {
+        navigate(`/dashboard/${currentRole}`);
+      } else {
+        navigate('/');
+      }
     } catch (error) {
       // Error is handled by the auth store
     }

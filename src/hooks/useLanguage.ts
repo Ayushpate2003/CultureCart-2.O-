@@ -1,21 +1,22 @@
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next'; // Disabled - i18n not configured
 import { useCallback } from 'react';
 
 export const useLanguage = () => {
-  const { i18n, t } = useTranslation();
+  // const { i18n, t } = useTranslation(); // Disabled - i18n not configured
 
   const changeLanguage = useCallback(async (language: string) => {
     try {
-      await i18n.changeLanguage(language);
+      // Store language preference in localStorage
       localStorage.setItem('culturecart_language', language);
+      console.log('Language changed to:', language);
     } catch (error) {
       console.error('Error changing language:', error);
     }
-  }, [i18n]);
+  }, []);
 
   const getCurrentLanguage = useCallback(() => {
-    return i18n.language;
-  }, [i18n.language]);
+    return localStorage.getItem('culturecart_language') || 'en';
+  }, []);
 
   const getAvailableLanguages = useCallback(() => {
     return [
@@ -44,7 +45,7 @@ export const useLanguage = () => {
     getCurrentLanguage,
     getAvailableLanguages,
     getLanguageName,
-    t,
-    i18n,
+    // t, // Disabled - i18n not configured
+    // i18n, // Disabled - i18n not configured
   };
 };

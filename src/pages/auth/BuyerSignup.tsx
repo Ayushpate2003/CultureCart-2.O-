@@ -10,7 +10,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { ShoppingBag, Loader2, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { BackButton } from '@/components/BackButton';
 
 export default function BuyerSignup() {
   const [formData, setFormData] = useState({
@@ -52,11 +51,18 @@ export default function BuyerSignup() {
     setIsLoading(true);
 
     try {
+      console.log('Attempting buyer signup with data:', {
+        email: formData.email,
+        name: formData.name,
+        role: 'buyer'
+      });
+      
       await signup({
         email: formData.email,
         password: formData.password,
         name: formData.name,
         role: 'buyer',
+        // Don't include metadata for buyers to avoid undefined values
       });
 
       toast({
@@ -65,10 +71,11 @@ export default function BuyerSignup() {
       });
 
       navigate('/onboarding');
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Buyer signup error:', error);
       toast({
         title: 'Signup failed',
-        description: 'Something went wrong. Please try again.',
+        description: error?.message || 'Something went wrong. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -77,19 +84,7 @@ export default function BuyerSignup() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-craft relative overflow-hidden">
-      {/* Decorative background elements */}
-      <div className="absolute inset-0 opacity-10">
-        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="warli-buyer" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-              <circle cx="50" cy="50" r="2" fill="currentColor" />
-              <rect x="45" y="45" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="1"/>
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#warli-buyer)" />
-        </svg>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -97,13 +92,10 @@ export default function BuyerSignup() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md mx-4"
       >
-        <div className="mb-6">
-          <BackButton to="/choose-role" />
-        </div>
-        <Card className="shadow-warm border-2">
+        <Card className="shadow-lg border-2 border-gray-200">
           <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-gradient-hero rounded-full flex items-center justify-center mb-4">
-              <ShoppingBag className="h-6 w-6 text-primary-foreground" />
+            <div className="mx-auto w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mb-4">
+              <ShoppingBag className="h-6 w-6 text-white" />
             </div>
             <CardTitle className="text-2xl">Join as a Buyer</CardTitle>
             <CardDescription>
@@ -203,7 +195,7 @@ export default function BuyerSignup() {
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-hero"
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white"
                 disabled={isLoading}
               >
                 {isLoading ? (

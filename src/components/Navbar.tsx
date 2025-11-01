@@ -1,18 +1,20 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
 import { ShoppingBag, User, LogOut, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const Navbar = () => {
-  const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Firebase removed - no authentication
+  const isAuthenticated = false;
+  const user = null;
 
   const handleLogout = () => {
-    logout();
-    navigate('/');
+    // Firebase removed - no logout functionality
+    console.log('Authentication removed');
   };
 
   const getDashboardLink = () => {

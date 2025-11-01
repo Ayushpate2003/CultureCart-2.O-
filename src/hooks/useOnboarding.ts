@@ -35,7 +35,12 @@ export const useOnboarding = () => {
     }
 
     if (user?.onboardingCompleted) {
-      navigate('/dashboard');
+      const roleRoutes = {
+        admin: '/dashboard/admin',
+        artisan: '/dashboard/artisan',
+        buyer: '/dashboard/buyer',
+      };
+      navigate(roleRoutes[user.role]);
       return;
     }
   }, [isAuthenticated, user, navigate]);

@@ -1,9 +1,10 @@
-import React, { useRef, useEffect, Suspense } from 'react';
+import React, { useRef, useEffect, Suspense, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { gsap } from 'gsap';
 import { TypeAnimation } from 'react-type-animation';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles, Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const FloatingCraft = () => {
   return (
@@ -41,10 +42,15 @@ const FloatingEmoji = ({ emoji, delay = 0, className = "" }: { emoji: string; de
 );
 
 const Hero: React.FC = () => {
+  const { t } = useTranslation();
   const heroRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(true);
+  const [isMuted, setIsMuted] = useState(true);
+  const [showControls, setShowControls] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -77,24 +83,122 @@ const Hero: React.FC = () => {
     };
   }, []);
 
+  const toggleVideo = () => {
+    if (videoRef.current) {
+      if (isVideoPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsVideoPlaying(!isVideoPlaying);
+    }
+  };
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
   return (
     <motion.section
       ref={heroRef}
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      onMouseEnter={() => setShowControls(true)}
+      onMouseLeave={() => setShowControls(false)}
       style={{
-        background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)',
         y,
         opacity
       }}
     >
-      {/* Glassmorphism Overlay */}
-      <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+      {/* Cinematic Video Background */}
+      <video
+        ref={videoRef}
+        className="absolute inset-0 w-full h-full object-cover"
+        autoPlay
+        muted
+        loop
+        playsInline
+        poster="/api/placeholder/1920/1080"
+      >
+        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4" />
+        {/* Fallback for browsers that don't support video */}
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-400 via-red-500 to-pink-500"></div>
+      </video>
 
-      {/* Floating Cultural Emojis */}
-      <FloatingEmoji emoji="🎨" delay={0} />
-      <FloatingEmoji emoji="🧵" delay={1} />
-      <FloatingEmoji emoji="🏺" delay={2} />
-      <FloatingEmoji emoji="🪔" delay={3} />
+      {/* Video Overlay */}
+      <div className="absolute inset-0 bg-black/40"></div>
+
+      {/* Video Controls */}
+      <motion.div
+        className="absolute top-4 right-4 z-20 flex gap-2"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: showControls ? 1 : 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={toggleVideo}
+          className="bg-black/50 hover:bg-black/70 text-white border-0"
+        >
+          {isVideoPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={toggleMute}
+          className="bg-black/50 hover:bg-black/70 text-white border-0"
+        >
+          {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+        </Button>
+      </motion.div>
+
+      {/* Interactive Craft Previews */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2, duration: 1 }}
+      >
+        {/* Hover-activated craft previews */}
+        <motion.div
+          className="absolute top-1/4 left-1/4 w-32 h-32 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center cursor-pointer"
+          whileHover={{ scale: 1.2, backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
+          onHoverStart={() => setShowControls(true)}
+          onHoverEnd={() => setShowControls(false)}
+        >
+          <span className="text-4xl">🪔</span>
+        </motion.div>
+
+        <motion.div
+          className="absolute top-1/3 right-1/4 w-32 h-32 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center cursor-pointer"
+          whileHover={{ scale: 1.2, backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
+          onHoverStart={() => setShowControls(true)}
+          onHoverEnd={() => setShowControls(false)}
+        >
+          <span className="text-4xl">🎨</span>
+        </motion.div>
+
+        <motion.div
+          className="absolute bottom-1/4 left-1/3 w-32 h-32 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center cursor-pointer"
+          whileHover={{ scale: 1.2, backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
+          onHoverStart={() => setShowControls(true)}
+          onHoverEnd={() => setShowControls(false)}
+        >
+          <span className="text-4xl">🧵</span>
+        </motion.div>
+
+        <motion.div
+          className="absolute bottom-1/3 right-1/3 w-32 h-32 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center cursor-pointer"
+          whileHover={{ scale: 1.2, backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
+          onHoverStart={() => setShowControls(true)}
+          onHoverEnd={() => setShowControls(false)}
+        >
+          <span className="text-4xl">🏺</span>
+        </motion.div>
+      </motion.div>
 
       {/* Floating Background Elements */}
       <FloatingCraft />
@@ -115,7 +219,7 @@ const Hero: React.FC = () => {
           className="text-6xl md:text-8xl font-bold text-white mb-6 leading-tight drop-shadow-2xl"
           style={{ opacity: 0 }}
         >
-          CultureCart
+          {t('hero.title', 'Living Digital Patachitra')}
         </motion.h1>
 
         <motion.div
@@ -125,11 +229,11 @@ const Hero: React.FC = () => {
         >
           <TypeAnimation
             sequence={[
-              'Discover India\'s rich heritage through authentic handmade crafts.',
+              t('hero.subtitle1', 'Discover India\'s rich heritage through authentic handmade crafts.'),
               2000,
-              'Connect with skilled artisans across the nation.',
+              t('hero.subtitle2', 'Connect with skilled artisans across the nation.'),
               2000,
-              'Bring home pieces that tell stories of tradition and artistry.',
+              t('hero.subtitle3', 'Bring home pieces that tell stories of tradition and artistry.'),
               2000,
             ]}
             wrapper="p"
@@ -143,21 +247,44 @@ const Hero: React.FC = () => {
           className="flex flex-col sm:flex-row gap-6 justify-center items-center"
           style={{ opacity: 0 }}
         >
-          <Button
-            size="lg"
-            className="bg-white text-orange-600 hover:bg-gray-50 px-8 py-4 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            Explore Crafts
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>
+            <Button
+              size="lg"
+              className="bg-white text-orange-600 hover:bg-gray-50 px-8 py-4 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              {t('hero.exploreCrafts', 'Explore Crafts')}
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+          </motion.div>
 
-          <Button
-            variant="outline"
-            size="lg"
-            className="border-2 border-white text-white hover:bg-white hover:text-orange-600 px-8 py-4 text-lg font-semibold rounded-full transition-all duration-300"
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            Become an Artisan
-          </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              className="border-2 border-white text-white hover:bg-white hover:text-orange-600 px-8 py-4 text-lg font-semibold rounded-full transition-all duration-300"
+            >
+              {t('hero.becomeArtisan', 'Become an Artisan')}
+            </Button>
+          </motion.div>
+
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Button
+              size="lg"
+              className="bg-white text-orange-600 hover:bg-gray-50 px-8 py-4 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              {t('hero.learnMore', 'Learn More')}
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+          </motion.div>
         </motion.div>
       </div>
 

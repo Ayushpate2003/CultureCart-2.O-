@@ -3,8 +3,9 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Package, TrendingUp, IndianRupee, ArrowRight } from 'lucide-react';
+import { Users, Package, TrendingUp, IndianRupee, ArrowRight, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/stores/authStore';
 
 const stats = [
   { icon: Users, label: 'Total Users', value: '1,234', change: '+12%', trend: 'up' },
@@ -15,6 +16,16 @@ const stats = [
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { logout } = useAuthStore();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   const quickActions = [
     { label: 'Manage Users', path: '/admin/users', icon: Users },
@@ -37,6 +48,14 @@ export default function AdminDashboard() {
               <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
               <p className="text-muted-foreground">Platform overview and management</p>
             </div>
+            <Button
+              variant="outline"
+              onClick={handleLogout}
+              className="gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Button>
           </div>
 
           {/* Quick Actions */}

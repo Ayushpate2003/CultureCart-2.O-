@@ -4,15 +4,26 @@ import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Package, Eye, ShoppingCart, TrendingUp, Upload, Sparkles, MoreHorizontal, BarChart3, DollarSign, MessageCircle, HelpCircle } from 'lucide-react';
+import { Package, Eye, ShoppingCart, TrendingUp, Upload, Sparkles, MoreHorizontal, BarChart3, DollarSign, MessageCircle, HelpCircle, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useArtisanProductsStore } from '@/stores/artisanProductsStore';
 import { AIAssistant } from '@/components/AIAssistant';
 import { useEffect } from 'react';
+import { useAuthStore } from '@/stores/authStore';
 
 export default function ArtisanDashboard() {
   const navigate = useNavigate();
   const { products, getTotalProducts, removeNewFlag } = useArtisanProductsStore();
+  const { logout } = useAuthStore();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   useEffect(() => {
     // Remove new flag after animation duration
@@ -59,13 +70,23 @@ export default function ArtisanDashboard() {
               <h1 className="text-4xl font-bold mb-2">Artisan Studio</h1>
               <p className="text-muted-foreground">Manage your crafts and track performance</p>
             </div>
-            <Button 
-              className="bg-gradient-hero gap-2"
-              onClick={() => navigate('/artisan/upload')}
-            >
-              <Upload className="h-4 w-4" />
-              Upload New Craft
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={handleLogout}
+                className="gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Button>
+              <Button
+                className="bg-gradient-hero gap-2"
+                onClick={() => navigate('/artisan/upload')}
+              >
+                <Upload className="h-4 w-4" />
+                Upload New Craft
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

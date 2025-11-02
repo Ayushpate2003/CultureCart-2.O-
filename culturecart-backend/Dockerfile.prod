@@ -1,0 +1,27 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy source code
+COPY . .
+
+# Create uploads directory
+RUN mkdir -p uploads
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S culturecart -u 1001
+
+# Change ownership
+RUN chown -R culturecart:nodejs /app
+USER culturecart
+
+EXPOSE 3001
+
+CMD ["npm", "start"]

@@ -1,90 +1,92 @@
-# CultureCart Redesign: Living Digital Patachitra
-## Premium, Multilingual, AI-Enhanced E-Commerce Marketplace
+# Coolify Setup for CultureCart Project
 
-### Phase 1: Foundation & Infrastructure ✅ COMPLETED
+## Information Gathered
+- **Project Structure**: Full-stack app with React frontend (Vite) and Node.js/Express backend (PostgreSQL).
+- **Existing Files**:
+  - `coolify-deployment.md`: Comprehensive deployment guide with GCP and Coolify setup.
+  - `coolify-setup-commands.sh`: GCP infrastructure and Coolify installation commands.
+  - `coolify/docker-compose.prod.yml`: Docker Compose for production services (backend and frontend).
+  - `culturecart-backend/Dockerfile.prod`: Optimized Dockerfile for backend.
+  - `Dockerfile.prod`: Multi-stage Dockerfile for frontend with Nginx.
+  - `nginx.conf` and `coolify/nginx.conf`: Nginx configs for proxying API and serving frontend.
+  - `.github/workflows/deploy.yml`: GitHub Actions for automated deployment via webhook.
+  - `culturecart-backend/healthcheck.js`: Health check script for database connectivity.
+  - Backend has health endpoint `/health` in `server.js`.
+- **Dependencies**: GCP account, Coolify account, domain (optional), GitHub repo.
+- **Current Status**: All Docker and config files are prepared; setup requires GCP infrastructure and Coolify configuration.
 
-#### 1.1 Multilingual System Enhancement ✅ COMPLETED
-- [x] Expand i18n support to all 12 Indian languages (Hindi, Bengali, Tamil, Telugu, Marathi, Gujarati, Kannada, Malayalam, Punjabi, Odia, Assamese, Urdu)
-- [x] Add RTL support for Urdu
-- [x] Implement AI-based location detection for language suggestions
-- [x] Add localized SEO with hreflang tags
+## Plan
+1. **Install GCP CLI**: Install and configure Google Cloud SDK. ✅
+2. **GCP Infrastructure Setup**:
+   - Create GCP project. ✅
+   - Enable required APIs (Compute, Container, Run, SQL, Cloud Build, Secret Manager). ✅
+   - Create VPC network and subnet. ✅
+   - Set up Cloud SQL PostgreSQL instance, database, and user. ✅
+   - Create VM instance for Coolify. ✅
+   - Configure firewall rules for HTTP/HTTPS and SSH. ✅
+3. **Coolify Installation**:
+   - SSH into VM.
+   - Install Coolify using the provided script.
+   - Access Coolify dashboard.
+4. **Coolify Configuration**:
+   - Add server (Local Docker Engine).
+   - Create project (CultureCart).
+   - Add production environment.
+   - Connect GitHub repository as source.
+   - Configure environment variables (DATABASE_URL, JWT_SECRET, etc.).
+   - Deploy backend and frontend services using docker-compose.prod.yml.
+5. **Domain and SSL Setup**:
+   - Add domain in Coolify.
+   - Update DNS A record.
+   - Enable auto SSL with Let's Encrypt.
+6. **Monitoring and Security**:
+   - Enable GCP monitoring and create uptime checks.
+   - Set up database backups.
+   - Configure firewall and security headers (already in nginx.conf).
+7. **CI/CD Integration**:
+   - Ensure GitHub Actions workflow triggers deployments.
+   - Test deployment pipeline.
+8. **Testing and Verification**:
+   - Verify health checks pass.
+   - Test frontend and API endpoints.
+   - Monitor logs and performance.
 
-#### 1.2 AI Assistant "KalaMitra" Implementation ✅ COMPLETED
-- [x] Create new AI assistant component with multilingual chat capabilities
-- [x] Integrate voice/text/image query support
-- [x] Add conversational craft discovery and shopping assistance
+## Steps
+- [x] Complete GCP CLI installation and initialization.
+- [x] Create GCP project 'culturecart-production'.
+- [x] Enable required GCP APIs (Compute, Container, Run, SQL, Cloud Build, Secret Manager).
+- [x] Create VPC network and subnet.
+- [x] Set up Cloud SQL PostgreSQL instance, database, and user.
+- [x] Create VM instance for Coolify.
+- [x] Configure firewall rules for HTTP/HTTPS and SSH.
+- [x] SSH into VM and install Coolify.
+- [x] Access Coolify dashboard and configure server (http://136.114.254.145:8000).
+- [ ] Create CultureCart project and production environment in Coolify.
+- [ ] Connect GitHub repository as source.
+- [ ] Configure environment variables in Coolify.
+- [ ] Deploy backend and frontend services.
+- [ ] Add domain and enable SSL.
+- [ ] Set up GCP monitoring and uptime checks.
+- [ ] Configure database backups and budget alerts.
+- [ ] Test CI/CD pipeline.
+- [ ] Verify health checks, frontend, and API functionality.
 
-### Phase 2: UI/UX Redesign
+## Dependent Files
+- `coolify-deployment.md`: Reference guide.
+- `coolify-setup-commands.sh`: Commands for GCP and Coolify setup.
+- `coolify/docker-compose.prod.yml`: Service definitions.
+- `culturecart-backend/Dockerfile.prod`: Backend containerization.
+- `Dockerfile.prod`: Frontend containerization.
+- `nginx.conf`: Nginx configuration.
+- `.github/workflows/deploy.yml`: Deployment automation.
+- `culturecart-backend/healthcheck.js`: Health check script.
+- `culturecart-backend/server.js`: Backend server with health endpoint.
 
-#### 2.1 Hero Section Transformation ✅ COMPLETED
-- [x] Replace static banner with cinematic hero video
-- [x] Add parallax effects and scroll-triggered animations
-- [x] Implement interactive hover states for craft previews
-
-#### 2.2 Navigation & UX Overhaul
-- [ ] Redesign mega-menu with state-based craft categories
-- [ ] Add AI-powered smart search with autocomplete
-- [ ] Implement advanced filtering with fluid animations
-
-#### 2.3 Product Experience Enhancement
-- [ ] Integrate 3D interactive viewers (using existing Three.js setup)
-- [ ] Add AR preview mode for mobile
-- [ ] Implement scroll-based staggered animations
-
-### Phase 3: Artisan & Social Features
-
-#### 3.1 Artisan Storytelling
-- [ ] Create enhanced artisan profile pages with video intros
-- [ ] Add "Meet the Maker" short films
-- [ ] Implement gamification with support badges
-
-#### 3.2 Social Proof & Community
-- [ ] Add real-time micro-animations for purchases
-- [ ] Enhance review system with images/videos
-- [ ] Create shoppable Instagram gallery and user-generated content
-
-### Phase 4: Performance & Accessibility
-
-#### 4.1 Performance Optimization
-- [ ] Implement lazy loading and progressive image rendering
-- [ ] Optimize for Lighthouse score ≥95
-- [ ] Add SSR capabilities
-
-#### 4.2 Accessibility & SEO
-- [ ] Ensure WCAG 2.2 compliance
-- [ ] Add ARIA roles and keyboard navigation
-- [ ] Implement localized schema markup
-
-### Phase 5: Special Features
-
-#### 5.1 VR Gallery & Voice Search
-- [ ] Add virtual reality craft bazaar walkthrough
-- [ ] Implement voice-activated search across languages
-
-#### 5.2 Impact Dashboard
-- [ ] Create real-time metrics for artisan support and craft revival
-
----
-
-## Current Progress
-- ✅ Project setup and services running
-- ✅ Phase 1.1: Multilingual enhancement completed
-- ✅ Phase 1.2: AI Assistant implementation completed
-- ✅ Phase 2.1: Hero section transformation completed
-- 🔄 Phase 2.2: Starting navigation & UX overhaul
-
-## Dependencies to Install
-- Enhanced i18n packages for 12 languages ✅ COMPLETED
-- VR/AR libraries for Phase 5
-- Additional animation libraries
-- Voice recognition packages
-
-## Testing Checklist
-- [ ] Multilingual functionality across all 12 languages
-- [ ] RTL layout for Urdu
-- [ ] AI assistant chat capabilities
-- [ ] Voice search functionality
-- [ ] Performance optimization (Lighthouse ≥95)
-- [ ] Accessibility compliance (WCAG 2.2)
-- [ ] Cross-browser compatibility
-- [ ] Mobile responsiveness
+## Followup Steps
+- Install dependencies (gcloud CLI).
+- Execute GCP setup commands.
+- Install and configure Coolify.
+- Deploy and test application.
+- Set up monitoring and backups.
+- Verify SSL and domain configuration.
+- Test full application functionality.
